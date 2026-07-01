@@ -20,7 +20,7 @@ public class ProductsController : ControllerBase
     public IActionResult GetProductById([FromRoute] string id)
     {
         if (id?.Length != 36)
-            throw new InvalidDataException();
+            return BadRequest();
         
         var product = FakeWarehouseStore.Products.FirstOrDefault(x => x.Id.Equals(id));
 
@@ -33,10 +33,21 @@ public class ProductsController : ControllerBase
     [HttpGet("search")]
     public IActionResult Search([FromQuery] string? name, [FromQuery] string? supplier)
     {
-        var results = FakeWarehouseStore.Products
-            .Where(p => (string.IsNullOrWhiteSpace(name) || p.Name.Contains(name, StringComparison.OrdinalIgnoreCase)
-                && (string.IsNullOrWhiteSpace(supplier) || p.SupplierName.Contains(supplier, StringComparison.OrdinalIgnoreCase))))
-            .ToList();
-        return Ok(results);
+        if(string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(supplier))
+            return BadRequest("Both filters empty. Please enter at least one.");
+
+        var filteredProducts = FakeWarehouseStore.Products.AsEnumerable();
+
+        if(!string.IsNullOrWhiteSpace(name))
+        {
+            filteredProducts = filteredProducts.Where(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if(!string.IsNullOrWhiteSpace(supplier))
+        {
+            filteredProducts = filteredProducts.Where(p => p.SupplierName.Contains(supplier, StringComparison.OrdinalIgnoreCase));
+        }
+        
+        return Ok(filteredProducts.ToList());
     }
 }
