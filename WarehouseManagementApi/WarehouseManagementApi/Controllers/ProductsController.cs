@@ -214,4 +214,25 @@ public class ProductsController : ControllerBase
         product.IsArchived = true;
         return Ok(product);
     }
+    
+    [HttpGet("server-time")]
+    public IActionResult GetServerTime([FromHeader(Name = "Accept-Language")] string language)
+    {
+        var lang = string.IsNullOrEmpty(language) ? "en-US" : language.Split(',')[0].Trim();
+
+        var now = DateTime.Now;
+
+        var result = lang switch
+        {
+            "en-US" =>
+                // month/day/year
+                now.Month + "/" + now.Day + "/" + now.Year,
+            "fr-FR" or "ar-LB" =>
+                // day/month/year
+                now.Day + "/" + now.Month + "/" + now.Year,
+            _ => now.Year + "-" + now.Month + "-" + now.Day
+        };
+
+        return Ok(result);
+    }
 }
