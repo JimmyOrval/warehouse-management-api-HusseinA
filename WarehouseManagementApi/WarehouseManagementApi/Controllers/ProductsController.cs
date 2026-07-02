@@ -198,4 +198,20 @@ public class ProductsController : ControllerBase
         
         return Ok(productImage);
     }
+
+    [HttpDelete("{id}")]
+    public IActionResult DeleteProduct([FromRoute] string id)
+    {
+        // ID should match GUID format
+        if (id?.Length != 36)
+            return BadRequest("Invalid ID format");
+
+        var product = FakeWarehouseStore.Products.FirstOrDefault(p => p.Id.Equals(id));
+
+        if (product == null)
+            return NotFound();
+
+        product.IsArchived = true;
+        return Ok(product);
+    }
 }
