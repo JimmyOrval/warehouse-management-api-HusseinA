@@ -147,4 +147,55 @@ public class ProductsController : ControllerBase
         
         return Ok(product);
     }
+
+    [HttpPost("{id}/image")]
+    // removed [FromQuery] and [FromForm] since they caused runtime errors
+    public IActionResult UploadImage(string id, IFormFile image)
+    {
+        // if file is invalid
+        if(image.Length == 0)
+            return BadRequest("No image was provided");
+        
+        // set image size limit
+        const long maxFileSize = 2 * 1024 * 1024;
+        
+        // check if image size exceeds the limit
+        if (image.Length > maxFileSize)
+            return BadRequest("Image size cannot exceed 2MB");
+        
+        // get the image's extension
+        var extension = Path.GetExtension(image.FileName).ToLower();
+        
+        // check if extension is valid
+        if (!extension.Contains("png") && !extension.Contains("jpg"))
+        {
+            return BadRequest("Image extension invalid. Use only .jpg or .png");
+        }
+
+        // set upload directory
+        var uploadFolderPath = Path.GetFullPath("wwwroot/uploads");
+
+        // if directory doesn't exist, create it
+        if (!Directory.Exists(uploadFolderPath))
+            Directory.CreateDirectory(uploadFolderPath);
+
+        // create a unique file name
+        var fileName = $"{Guid.NewGuid()}{extension}";
+        // combine full path with new file name
+        var filePath = Path.Combine(uploadFolderPath, fileName);
+
+        var productImage = new ProductImage
+        {
+            Id = Guid.NewGuid().ToString(),
+            FileName = fileName,
+            FilePath = filePath
+        };
+
+        // open a file stream in create mode using our new file path
+        using var fileStream = new FileStream(filePath, FileMode.Create);
+        // copy the image to the uploads using the file stream
+        image.CopyTo(fileStream);
+        
+        return Ok(productImage);
+    }
 }
