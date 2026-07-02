@@ -27,7 +27,7 @@ public class ProductsController : ControllerBase
     public IActionResult GetProductById([FromRoute] string id)
     {
         if (id?.Length != 36)
-            return BadRequest();
+            return BadRequest("Invalid ID format");
         
         var product = FakeWarehouseStore.Products.FirstOrDefault(x => x.Id.Equals(id));
 
@@ -91,5 +91,29 @@ public class ProductsController : ControllerBase
         
         FakeWarehouseStore.Products.Add(product);
         return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult UpdateQuantity([FromRoute] string id, [FromBody] int newQuantity)
+    {
+        // ID should match GUID format
+        if (id?.Length != 36)
+            return BadRequest("Invalid ID format");
+
+        // quantity cannot be negative
+        if (newQuantity < 0)
+            return BadRequest("Quantity cannot be negative");
+
+        var product = FakeWarehouseStore.Products.FirstOrDefault(p => p.Id == id);
+
+        if (product == null)
+        {
+            return NotFound();
+        }
+        
+        // update both the quantity and updated date
+        product.QuantityInStock = newQuantity;
+        product.LastUpdatedAt = DateTime.Now;
+        return Ok(product);
     }
 }
