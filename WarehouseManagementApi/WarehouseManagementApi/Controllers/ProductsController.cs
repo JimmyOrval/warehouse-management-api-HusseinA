@@ -118,7 +118,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPut("{id}/price")]
-    public IActionResult UpdatePrice([FromRoute] string id, [FromRoute] decimal newPrice)
+    public IActionResult UpdatePrice([FromRoute] string id, [FromBody] decimal newPrice)
     {
         // ID should match GUID format
         if (id?.Length != 36)
