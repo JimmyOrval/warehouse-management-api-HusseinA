@@ -93,7 +93,7 @@ public class ProductsController : ControllerBase
         return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id}/quantity")]
     public IActionResult UpdateQuantity([FromRoute] string id, [FromBody] int newQuantity)
     {
         // ID should match GUID format
@@ -104,7 +104,7 @@ public class ProductsController : ControllerBase
         if (newQuantity < 0)
             return BadRequest("Quantity cannot be negative");
 
-        var product = FakeWarehouseStore.Products.FirstOrDefault(p => p.Id == id);
+        var product = FakeWarehouseStore.Products.FirstOrDefault(p => p.Id.Equals(id));
 
         if (product == null)
         {
@@ -114,6 +114,37 @@ public class ProductsController : ControllerBase
         // update both the quantity and updated date
         product.QuantityInStock = newQuantity;
         product.LastUpdatedAt = DateTime.Now;
+        return Ok(product);
+    }
+
+    [HttpPut("{id}/price")]
+    public IActionResult UpdatePrice([FromRoute] string id, [FromRoute] decimal newPrice)
+    {
+        // ID should match GUID format
+        if (id?.Length != 36)
+            return BadRequest("Invalid ID format");
+
+        // price cannot be negative
+        if (newPrice < 0)
+            return BadRequest("Price cannot be negative");
+        
+        var product = FakeWarehouseStore.Products.FirstOrDefault(p => p.Id.Equals(id));
+        
+        if(product == null)
+            return NotFound();
+        
+        // keep track of old values
+        var oldPrice = product.Price;
+        var oldLastUpdatedAt = product.LastUpdatedAt;
+
+        // update new values
+        product.Price = newPrice;
+        product.LastUpdatedAt = DateTime.Now;
+        
+        // log changes
+        Console.WriteLine("Old price: " + oldPrice + ", Old LastUpdatedAt: " + oldLastUpdatedAt +
+                          ", New Price: " + product.Price + ", New LastUpdatedAt: " + product.LastUpdatedAt);
+        
         return Ok(product);
     }
 }
