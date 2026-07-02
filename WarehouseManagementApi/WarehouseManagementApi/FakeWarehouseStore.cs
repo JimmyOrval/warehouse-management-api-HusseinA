@@ -2,7 +2,7 @@
 
 namespace WarehouseManagementApi;
 
-public class FakeWarehouseStore
+public static class FakeWarehouseStore
 {
     public static List<Product> Products { get; set; }
 
@@ -54,8 +54,7 @@ public class FakeWarehouseStore
                 CreatedAt = DateTime.Now.AddDays(-3),
                 LastUpdatedAt = DateTime.Now
             },
-            
-            ////////////////////////////////////////////////////////
+
             new Product
             {
             Id = "df7b864c-80c5-4988-ab4d-aa5ac72515ee",
