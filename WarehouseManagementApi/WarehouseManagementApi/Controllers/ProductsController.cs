@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using WarehouseManagementApi.Models;
 
 namespace WarehouseManagementApi.Controllers;
@@ -11,9 +10,16 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public List<Product> GetProducts([FromQuery] bool? onlyAvailable = true)
     {
-        var products = FakeWarehouseStore.Products
-            .OrderByDescending(p => p.CreatedAt);
-        return FakeWarehouseStore.Products;
+        var products = FakeWarehouseStore.Products.AsQueryable();
+        
+        // if query variable is true, filter according to availability
+        if (onlyAvailable == true)
+        {
+            products = products.Where(p => !p.IsArchived && p.QuantityInStock > 0);
+        }
+        
+        // return the list sorted by decreasing creation date
+        return products.OrderByDescending(p => p.CreatedAt).ToList();
     }
 
     [HttpGet("{id}")]
