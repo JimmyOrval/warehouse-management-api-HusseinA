@@ -5,9 +5,9 @@ namespace WarehouseManagementApi.Models;
 public class ProductImage
 {
     [Required]
-    public string Id { get; set; }
+    public required string Id { get; set; }
     [Required]
-    public string FileName { get; set; }
+    public required string FileName { get; set; }
     [Required]
-    public string FilePath { get; set; }
+    public required string FilePath { get; set; }
 }
