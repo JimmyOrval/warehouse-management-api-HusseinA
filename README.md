@@ -40,3 +40,22 @@ A Warehouse Management API For Managing Warehouse Products Using An In-memory Li
 - Date is currently being stored in an in-memory list only, no Database involved
 - The list already holds pre-seeded products
 - Image uploads are stored in "wwwroot/uploads"
+
+## Additional Features
+
+### Suppliers
+
+- `GET /api/suppliers`
+- `GET /api/suppliers/{id}`
+- `POST /api/suppliers`
+- `DELETE /api/suppliers/{id}`
+
+### Product-Supplier Relationship
+
+- `POST /api/products/{id}/assign-supplier/{supplierId}`
+
+## Homework Feature
+
+- Suppliers can be fetched (all/by ID)
+- Suppliers can be created and deleted
+- Products can be linked to a supplier
