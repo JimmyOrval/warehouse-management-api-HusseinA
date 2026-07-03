@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WarehouseManagementApi.Contracts;
 using WarehouseManagementApi.Models;
+using WarehouseManagementApi.Services;
 
 namespace WarehouseManagementApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProductsController : ControllerBase
+public class ProductsController(ISuppliersService suppliersService) : ControllerBase
 {
     [HttpGet]
     public IActionResult GetProducts([FromQuery] bool? onlyAvailable = true)
@@ -234,5 +235,25 @@ public class ProductsController : ControllerBase
         };
 
         return Ok(result);
+    }
+
+    [HttpPost("{id}/assign-supplier/{supplierId}")]
+    public IActionResult AssignSupplier([FromRoute] string id, [FromRoute] string supplierId)
+    {
+        var product = FakeWarehouseStore.Products.FirstOrDefault(p => p.Id.Equals(id));
+        
+        if(product == null)
+            return NotFound("Product not found");
+        
+        if(product.IsArchived)
+            return BadRequest("Product is unavailable");
+        
+        var supplier = suppliersService.GetSupplier(id);
+
+        if (supplier == null)
+            return NotFound("Supplier not found");
+
+        product.SupplierName = supplier.Name;
+        return Ok(product);
     }
 }

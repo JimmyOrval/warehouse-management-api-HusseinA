@@ -29,7 +29,7 @@ public class Product
     
     [Required(ErrorMessage = "Supplier name is required")]
     [StringLength(50, ErrorMessage = "Supplier name cannot be longer than 50 characters")]
-    public required string SupplierName { get; init; }
+    public required string SupplierName { get; set; }
     
     [Required(ErrorMessage = "Expiry date is required")]
     public DateTime ExpiryDate { get; set; }

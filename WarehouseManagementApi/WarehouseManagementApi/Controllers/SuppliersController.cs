@@ -8,7 +8,7 @@ namespace WarehouseManagementApi.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 // SupplierService is injected as a primary constructor
-public class SuppliersController(SuppliersService suppliersService) : ControllerBase
+public class SuppliersController(ISuppliersService suppliersService) : ControllerBase
 {
     [HttpGet]
     public IActionResult GetSuppliers()
