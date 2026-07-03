@@ -1,17 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WarehouseManagementApi.Contracts;
 using WarehouseManagementApi.Models;
+using WarehouseManagementApi.Services;
 
 namespace WarehouseManagementApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SuppliersController : ControllerBase
+// SupplierService is injected as a primary constructor
+public class SuppliersController(SuppliersService suppliersService) : ControllerBase
 {
     [HttpGet]
     public IActionResult GetSuppliers()
     {
-        return Ok(FakeSupplierDirectory.Suppliers.ToList());
+        // methods simply call the service instead of containing the logic themselves
+        return Ok(suppliersService.GetSuppliers());
     }
 
     [HttpGet("{id}")]
@@ -19,9 +22,8 @@ public class SuppliersController : ControllerBase
     {
         if (id.Length != 36)
             return BadRequest("Invalid ID format");
-        
-        var supplier = FakeSupplierDirectory.Suppliers
-            .FirstOrDefault(s => s.Id.Equals(id));
+
+        var supplier = suppliersService.GetSupplier(id);
         
         if(supplier == null)
             return NotFound();
@@ -32,17 +34,7 @@ public class SuppliersController : ControllerBase
     [HttpPost]
     public IActionResult CreateSupplier([FromBody] CreateSupplierRequest request)
     {
-        var supplier = new Supplier
-        {
-            Id = Guid.NewGuid().ToString(),
-            Name =  request.Name,
-            Country =  request.Country,
-            ContactEmail = request.ContactEmail,
-            Phone =  request.Phone,
-            IsActive = true
-        };
-        
-        FakeSupplierDirectory.Suppliers.Add(supplier);
+        var supplier = suppliersService.CreateSupplier(request);
         return CreatedAtAction(nameof(GetSupplier), new { id = supplier.Id }, supplier);
     }
 
@@ -52,13 +44,11 @@ public class SuppliersController : ControllerBase
         if (id.Length != 36)
             return BadRequest("Invalid ID format");
 
-        var supplier = FakeSupplierDirectory.Suppliers
-            .FirstOrDefault(s => s.Id.Equals(id));
+        var supplier = suppliersService.DeleteSupplier(id);
 
         if (supplier == null)
             return NotFound();
 
-        supplier.IsActive = false;
-        return Ok(supplier);
+        return Ok();
     }
 }
