@@ -9,7 +9,7 @@ namespace WarehouseManagementApi.Controllers;
 public class ProductsController : ControllerBase
 {
     [HttpGet]
-    public List<Product> GetProducts([FromQuery] bool? onlyAvailable = true)
+    public IActionResult GetProducts([FromQuery] bool? onlyAvailable = true)
     {
         var products = FakeWarehouseStore.Products.AsQueryable();
         
@@ -20,7 +20,7 @@ public class ProductsController : ControllerBase
         }
         
         // return the list sorted by decreasing creation date
-        return products.OrderByDescending(p => p.CreatedAt).ToList();
+        return Ok(products.OrderByDescending(p => p.CreatedAt).ToList());
     }
 
     [HttpGet("{id}")]
