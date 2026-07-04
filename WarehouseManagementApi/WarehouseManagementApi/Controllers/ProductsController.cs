@@ -7,7 +7,7 @@ namespace WarehouseManagementApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProductsController(ISuppliersService suppliersService) : ControllerBase
+public class ProductsController : ControllerBase
 {
     [HttpGet]
     public IActionResult GetProducts([FromQuery] bool? onlyAvailable = true)
@@ -248,7 +248,7 @@ public class ProductsController(ISuppliersService suppliersService) : Controller
         if(product.IsArchived)
             return BadRequest("Product is unavailable");
         
-        var supplier = suppliersService.GetSupplier(id);
+        var supplier = FakeSupplierDirectory.Suppliers.FirstOrDefault(s => s.Id.Equals(supplierId));
 
         if (supplier == null)
             return NotFound("Supplier not found");
