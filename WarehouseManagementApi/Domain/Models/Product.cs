@@ -40,4 +40,12 @@ public class Product
     public DateTime CreatedAt { get; init; } =  DateTime.Now;
 
     public DateTime LastUpdatedAt { get; set; } = DateTime.Now;
+
+    public void Archive()
+    {
+        if(IsArchived)
+            throw new InvalidOperationException("Product already archived");
+        IsArchived = true;
+        LastUpdatedAt = DateTime.Now;
+    }
 }
