@@ -20,7 +20,7 @@ public class Product
     public required string Description { get; set; }
     
     [Required(ErrorMessage = "Price is required")]
-    [Range(0.0, double.MaxValue, ErrorMessage =  "Price cannot be negative")]
+    [Range(0.1, double.MaxValue, ErrorMessage =  "Price cannot be negative")]
     public decimal Price { get; set; } = 0.00m;
     
     [Required(ErrorMessage = "Quantity is required")]
