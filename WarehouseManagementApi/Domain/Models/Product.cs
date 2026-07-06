@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using WarehouseManagementApi.Models;
+using Domain.Models;
 
 namespace Domain.Models;
 

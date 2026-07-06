@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WarehouseManagementApi.Contracts;
-using WarehouseManagementApi.Models;
 using Domain.Models;
-using WarehouseManagementApi.Services;
 
 namespace WarehouseManagementApi.Controllers;
 

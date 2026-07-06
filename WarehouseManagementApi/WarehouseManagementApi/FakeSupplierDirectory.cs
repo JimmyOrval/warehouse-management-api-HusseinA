@@ -1,4 +1,4 @@
-﻿using WarehouseManagementApi.Models;
+﻿using Domain.Models;
 
 namespace WarehouseManagementApi;
 
