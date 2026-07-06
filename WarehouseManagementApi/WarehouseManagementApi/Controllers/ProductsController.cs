@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WarehouseManagementApi.Contracts;
 using WarehouseManagementApi.Models;
+using Domain.Models;
 using WarehouseManagementApi.Services;
 
 namespace WarehouseManagementApi.Controllers;
@@ -56,7 +57,12 @@ public class ProductsController : ControllerBase
         // if name filter available, filter according to supplier
         if(!string.IsNullOrWhiteSpace(supplier))
         {
-            filteredProducts = filteredProducts.Where(p => p.SupplierName.Contains(supplier, StringComparison.OrdinalIgnoreCase));
+            filteredProducts = filteredProducts.Where(p => 
+                FakeSupplierDirectory.Suppliers.Any(s => 
+                    s.Id == p.SupplierId && 
+                    s.Name.Contains(supplier, StringComparison.OrdinalIgnoreCase)
+                )
+            );
         }
         
         return Ok(filteredProducts.ToList());
@@ -83,7 +89,7 @@ public class ProductsController : ControllerBase
             Description = request.Description,
             Price = request.Price,
             QuantityInStock = request.QuantityInStock,
-            SupplierName = request.SupplierName,
+            SupplierId = request.SupplierId,
             ExpiryDate = request.ExpiryDate,
             IsArchived = false,
             CreatedAt = DateTime.Now,
@@ -253,7 +259,7 @@ public class ProductsController : ControllerBase
         if (supplier == null)
             return NotFound("Supplier not found");
 
-        product.SupplierName = supplier.Name;
+        product.AssignSupplier(supplier);
         return Ok(product);
     }
 }

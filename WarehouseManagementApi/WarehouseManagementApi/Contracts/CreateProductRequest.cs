@@ -23,9 +23,10 @@ public class CreateProductRequest
     [Range(0, int.MaxValue, ErrorMessage = "Quantity cannot be negative")]
     public int QuantityInStock { get; set; } = 0;
     
-    [Required(ErrorMessage = "Supplier name is required")]
-    [StringLength(50, ErrorMessage = "Supplier name cannot be longer than 50 characters")]
-    public required string SupplierName { get; set; }
+    [Required(ErrorMessage = "Supplier ID is required")]
+    [MinLength(36, ErrorMessage = "Supplier ID cannot be shorter than 36 characters")]
+    [MaxLength(36, ErrorMessage = "Supplier ID cannot be longer than 36 characters")]
+    public required string SupplierId { get; set; }
     
     [Required(ErrorMessage = "Expiry date is required")]
     public DateTime ExpiryDate { get; set; }
