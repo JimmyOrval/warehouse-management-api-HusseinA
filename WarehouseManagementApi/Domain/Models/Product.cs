@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using WarehouseManagementApi.Models;
 
-namespace WarehouseManagementApi.Models;
+namespace Domain.Models;
 
 public class Product
 {
@@ -27,9 +28,12 @@ public class Product
     [Range(0, int.MaxValue, ErrorMessage = "Quantity cannot be negative")]
     public int QuantityInStock { get; set; } = 0;
     
-    [Required(ErrorMessage = "Supplier name is required")]
-    [StringLength(50, ErrorMessage = "Supplier name cannot be longer than 50 characters")]
-    public required string SupplierName { get; set; }
+    [Required(ErrorMessage = "Supplier ID is required")]
+    [MinLength(36, ErrorMessage = "Supplier ID cannot be shorter than 36 characters")]
+    [MaxLength(36, ErrorMessage = "Supplier ID cannot be longer than 36 characters")]
+    public required string SupplierId { get; set; }
+    
+    public Supplier? Supplier { get; set; }
     
     [Required(ErrorMessage = "Expiry date is required")]
     public DateTime ExpiryDate { get; set; }
@@ -46,6 +50,14 @@ public class Product
         if(IsArchived)
             throw new InvalidOperationException("Product already archived");
         IsArchived = true;
+        LastUpdatedAt = DateTime.Now;
+    }
+
+    public void AssignSupplier(Supplier supplier)
+    {
+        if(!supplier.IsActive)
+            throw new ArgumentException("Supplier is not active");
+        SupplierId = supplier.Id;
         LastUpdatedAt = DateTime.Now;
     }
 }
