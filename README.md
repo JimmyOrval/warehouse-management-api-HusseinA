@@ -1,6 +1,7 @@
 # Warehouse Management API
 A Warehouse Management API For Managing Warehouse Products Using An In-memory List. The Project Is Built Incrementally During InMind Academy
 
+# Session 1
 ## Features
 
 - Basic CRUD operations for products
