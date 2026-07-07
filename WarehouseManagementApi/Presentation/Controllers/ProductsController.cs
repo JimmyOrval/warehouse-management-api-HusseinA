@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WarehouseManagementApi.Contracts;
 using Domain.Models;
+using MediatR;
 
 namespace WarehouseManagementApi.Controllers;
 
@@ -73,31 +74,10 @@ public class ProductsController : ControllerBase
     [HttpPost]
     public IActionResult CreateProduct([FromBody] CreateProductRequest request)
     {
-        // check if duplicate SKU already exists
-        var skuExists = FakeWarehouseStore.Products
-            .Any(p => p.Sku.Equals(request.Sku, StringComparison.OrdinalIgnoreCase));
-
-        if (skuExists)
-        {
-            // returns code 409
-            return Conflict("SKU already exists");
-        }
+        //this is where SKU validation was
+        // this was where product was created (var product=...)
         
-        var product = new Product
-        {
-            Id = Guid.NewGuid().ToString(),
-            Name = request.Name,
-            Sku = request.Sku,
-            Description = request.Description,
-            Price = request.Price,
-            SupplierId = request.SupplierId,
-            ExpiryDate = request.ExpiryDate,
-            IsArchived = false,
-            CreatedAt = DateTime.Now,
-            LastUpdatedAt = DateTime.Now
-        };
         
-        FakeWarehouseStore.Products.Add(product);
         return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
     }
 
