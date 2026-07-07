@@ -234,7 +234,7 @@ public class ProductsController : ControllerBase
             return NotFound();
 
         product.IsArchived = true;
-        return Ok(product);
+        return NoContent();
     }
     
     [HttpGet("server-time")]
