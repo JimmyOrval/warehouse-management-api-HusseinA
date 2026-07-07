@@ -58,7 +58,11 @@ public class Product
 
     public void ChangePrice(decimal newPrice)
     {
-        if(newPrice<=0) throw new ArgumentException("Price cannot be negative");
+        if(newPrice<=0)
+            throw new ArgumentException("Price must be greater than 0");
+        if(IsArchived)
+            throw new InvalidOperationException("Product is not archived");
+        
         Price = newPrice;
         LastUpdatedAt = DateTime.Now;
     }
