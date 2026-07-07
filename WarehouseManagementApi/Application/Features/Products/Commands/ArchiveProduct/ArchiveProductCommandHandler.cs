@@ -18,7 +18,7 @@ public class ArchiveProductCommandHandler(IProductRepository productRepository)
         if (product == null)
             throw new KeyNotFoundException("Product not found");
 
-        product.IsArchived = true;
+        product.Archive();
         return product;
     }
 }

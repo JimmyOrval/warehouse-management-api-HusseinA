@@ -55,4 +55,11 @@ public class Product
         SupplierId = supplier.Id;
         LastUpdatedAt = DateTime.Now;
     }
+
+    public void ChangePrice(decimal newPrice)
+    {
+        if(newPrice<=0) throw new ArgumentException("Price cannot be negative");
+        Price = newPrice;
+        LastUpdatedAt = DateTime.Now;
+    }
 }

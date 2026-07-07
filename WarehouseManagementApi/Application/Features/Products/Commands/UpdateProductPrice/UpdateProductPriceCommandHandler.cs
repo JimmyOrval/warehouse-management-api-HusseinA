@@ -13,11 +13,8 @@ public class UpdateProductPriceCommandHandler(IProductRepository productReposito
         if (request.Id?.Length != 36)
             throw new ArgumentException("Invalid ID format");
 
-        // price cannot be negative
-        if (request.NewPrice < 0)
-            throw new ArgumentException("Price cannot be negative");
-
         var product = productRepository.GetById(request.Id);
+        
         if (product == null)
             throw new KeyNotFoundException("Product not found");
         
@@ -26,8 +23,7 @@ public class UpdateProductPriceCommandHandler(IProductRepository productReposito
         var oldLastUpdatedAt = product.LastUpdatedAt;
 
         // update new values
-        product.Price = request.NewPrice;
-        product.LastUpdatedAt = DateTime.Now;
+        product.ChangePrice(request.NewPrice);
         
         // log changes
         Console.WriteLine("Old price: " + oldPrice + ", Old LastUpdatedAt: " + oldLastUpdatedAt +
