@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Domain.Models;
+﻿using System.ComponentModel.DataAnnotations; 
 
 namespace Domain.Models;
 
@@ -23,10 +22,6 @@ public class Product
     [Required(ErrorMessage = "Price is required")]
     [Range(0.1, double.MaxValue, ErrorMessage =  "Price cannot be negative")]
     public decimal Price { get; set; } = 0.00m;
-    
-    [Required(ErrorMessage = "Quantity is required")]
-    [Range(0, int.MaxValue, ErrorMessage = "Quantity cannot be negative")]
-    public int QuantityInStock { get; set; } = 0;
     
     [Required(ErrorMessage = "Supplier ID is required")]
     [MinLength(36, ErrorMessage = "Supplier ID cannot be shorter than 36 characters")]
