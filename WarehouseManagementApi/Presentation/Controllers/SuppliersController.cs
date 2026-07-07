@@ -1,54 +1,39 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using WarehouseManagementApi.Contracts;
-using Domain.Models;
-using WarehouseManagementApi.Services;
+﻿using Application.Contracts;
+using Application.Features.Suppliers.Commands.CreateSupplier;
+using Application.Features.Suppliers.Commands.DeactivateSupplier;
+using Application.Features.Suppliers.Queries.GetSupplierById;
+using Application.Features.Suppliers.Queries.ListSuppliers;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
-namespace WarehouseManagementApi.Controllers;
+namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-// SupplierService is injected as a primary constructor
-public class SuppliersController(ISuppliersService suppliersService) : ControllerBase
+public class SuppliersController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
     public IActionResult GetSuppliers()
     {
-        // methods simply call the service instead of containing the logic themselves
-        return Ok(suppliersService.GetSuppliers());
+        return Ok(mediator.Send(new ListSuppliersQuery()));
     }
 
     [HttpGet("{id}")]
     public IActionResult GetSupplier(string id)
     {
-        if (id.Length != 36)
-            return BadRequest("Invalid ID format");
-
-        var supplier = suppliersService.GetSupplier(id);
-        
-        if(supplier == null)
-            return NotFound();
-        
-        return Ok(supplier);
+        return Ok(mediator.Send(new GetSupplierByIdQuery(id)));
     }
 
     [HttpPost]
     public IActionResult CreateSupplier([FromBody] CreateSupplierRequest request)
     {
-        var supplier = suppliersService.CreateSupplier(request);
-        return CreatedAtAction(nameof(GetSupplier), new { id = supplier.Id }, supplier);
+        var supplierId = mediator.Send(new CreateSupplierCommand(request));
+        return CreatedAtAction(nameof(GetSupplier), new { id = supplierId }, null);
     }
 
     [HttpDelete("{id}")]
     public IActionResult DeleteSupplier(string id)
     {
-        if (id.Length != 36)
-            return BadRequest("Invalid ID format");
-
-        var supplier = suppliersService.DeleteSupplier(id);
-
-        if (supplier == null)
-            return NotFound();
-
-        return Ok();
+        return Ok(mediator.Send(new DeactivateSupplierCommand(id)));
     }
 }

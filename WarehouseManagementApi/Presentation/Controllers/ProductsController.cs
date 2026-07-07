@@ -1,147 +1,62 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using WarehouseManagementApi.Contracts;
+﻿using Application.Contracts;
+using Application.Features.Products.Commands.ArchiveProduct;
+using Application.Features.Products.Commands.AssignSupplierToProduct;
+using Application.Features.Products.Commands.CreateProduct;
+using Application.Features.Products.Commands.UpdateProductPrice;
+using Application.Features.Products.Commands.UpdateProductQuantity;
+using Application.Features.Products.Queries.GetProductById;
+using Application.Features.Products.Queries.ListProducts;
+using Application.Features.Products.Queries.SearchProducts;
 using Domain.Models;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using WarehouseManagementApi;
 
-namespace WarehouseManagementApi.Controllers;
+namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProductsController : ControllerBase
+public class ProductsController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
     public IActionResult GetProducts([FromQuery] bool? onlyAvailable = true)
     {
-        var products = FakeWarehouseStore.Products.AsQueryable();
-        
-        // if query variable is true, filter according to availability
-        if (onlyAvailable == true)
-        {
-            products = products.Where(p =>
-                !p.IsArchived &&
-                FakeWarehouseStore.Items
-                    .Where(i => i.ProductId == p.Id)
-                    .Sum(i => i.QuantityInStock) > 0);
-        }
-        
-        // return the list sorted by decreasing creation date
-        return Ok(products.OrderByDescending(p => p.CreatedAt).ToList());
+        return Ok(mediator.Send(new ListProductsQuery(onlyAvailable)));
     }
 
     [HttpGet("{id}")]
     public IActionResult GetProductById([FromRoute] string id)
     {
-        if (id?.Length != 36)
-            return BadRequest("Invalid ID format");
-        
-        var product = FakeWarehouseStore.Products.FirstOrDefault(x => x.Id.Equals(id));
-
-        if (product == null)
-            return NotFound();
-        
+        var product = mediator.Send(new GetProductByIdQuery(id));
         return Ok(product);
     }
 
     [HttpGet("search")]
     public IActionResult Search([FromQuery] string? name, [FromQuery] string? supplier)
     {
-        // BadRequest if both filters are empty
-        if(string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(supplier))
-            return BadRequest("Both filters empty. Please enter at least one.");
-
-        var filteredProducts = FakeWarehouseStore.Products.AsEnumerable();
-
-        // if name filter available, filter according to name
-        if(!string.IsNullOrWhiteSpace(name))
-        {
-            filteredProducts = filteredProducts.Where(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
-        }
-
-        // if name filter available, filter according to supplier
-        if(!string.IsNullOrWhiteSpace(supplier))
-        {
-            filteredProducts = filteredProducts.Where(p => 
-                FakeSupplierDirectory.Suppliers.Any(s => 
-                    s.Id == p.SupplierId && 
-                    s.Name.Contains(supplier, StringComparison.OrdinalIgnoreCase)
-                )
-            );
-        }
-        
-        return Ok(filteredProducts.ToList());
+        return Ok(mediator.Send(new SearchProductsQuery(name, supplier)));
     }
 
     [HttpPost]
     public IActionResult CreateProduct([FromBody] CreateProductRequest request)
     {
-        //this is where SKU validation was
-        // this was where product was created (var product=...)
+        var productId = mediator.Send(new CreateProductCommand(
+            request.Name, request.Sku, request.Description,
+            request.Price, request.SupplierId, request.ExpiryDate));
         
-        
-        return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
+        return CreatedAtAction(nameof(GetProductById), new { id = productId }, null);
     }
 
     [HttpPut("{id}/quantity")]
     public IActionResult UpdateQuantity([FromRoute] string id, [FromBody] UpdateProductQuantityRequest request)
     {
-        // ID should match GUID format
-        if (id?.Length != 36)
-            return BadRequest("Invalid ID format");
-
-        // quantity cannot be negative
-        if (request.QuantityInStock < 0)
-            return BadRequest("Quantity cannot be negative");
-
-        var product = FakeWarehouseStore.Products.FirstOrDefault(p => p.Id.Equals(id));
-
-        if (product == null)
-        {
-            return NotFound();
-        }
-        
-        var item = FakeWarehouseStore.Items.FirstOrDefault(i =>
-            i.ProductId.Equals(id) &&
-            i.Location.Equals(request.Location, StringComparison.OrdinalIgnoreCase));
-
-        if (item == null)
-            return NotFound($"No warehouse item found in '{request.Location}'");
-        
-        // update both the quantity and updated date
-        item.QuantityInStock = request.QuantityInStock;
-        item.LastStockUpdate = DateTime.Now;
-        product.LastUpdatedAt = DateTime.Now;
-        return Ok(item);
+        return Ok(mediator.Send(new UpdateProductQuantityCommand(id, request.Quantity, request.Location)));
     }
 
     [HttpPut("{id}/price")]
     public IActionResult UpdatePrice([FromRoute] string id, [FromBody] decimal newPrice)
     {
-        // ID should match GUID format
-        if (id?.Length != 36)
-            return BadRequest("Invalid ID format");
-
-        // price cannot be negative
-        if (newPrice < 0)
-            return BadRequest("Price cannot be negative");
-        
-        var product = FakeWarehouseStore.Products.FirstOrDefault(p => p.Id.Equals(id));
-        
-        if(product == null)
-            return NotFound();
-        
-        // keep track of old values
-        var oldPrice = product.Price;
-        var oldLastUpdatedAt = product.LastUpdatedAt;
-
-        // update new values
-        product.Price = newPrice;
-        product.LastUpdatedAt = DateTime.Now;
-        
-        // log changes
-        Console.WriteLine("Old price: " + oldPrice + ", Old LastUpdatedAt: " + oldLastUpdatedAt +
-                          ", New Price: " + product.Price + ", New LastUpdatedAt: " + product.LastUpdatedAt);
-        
-        return Ok(product);
+        return Ok(mediator.Send(new UpdateProductPriceCommand(id, newPrice)));
     }
 
     [HttpPost("{id}/image")]
@@ -204,16 +119,7 @@ public class ProductsController : ControllerBase
     [HttpDelete("{id}")]
     public IActionResult DeleteProduct([FromRoute] string id)
     {
-        // ID should match GUID format
-        if (id?.Length != 36)
-            return BadRequest("Invalid ID format");
-
-        var product = FakeWarehouseStore.Products.FirstOrDefault(p => p.Id.Equals(id));
-
-        if (product == null)
-            return NotFound();
-
-        product.IsArchived = true;
+        mediator.Send(new ArchiveProductCommand(id));
         return NoContent();
     }
     
@@ -241,20 +147,6 @@ public class ProductsController : ControllerBase
     [HttpPost("{id}/assign-supplier/{supplierId}")]
     public IActionResult AssignSupplier([FromRoute] string id, [FromRoute] string supplierId)
     {
-        var product = FakeWarehouseStore.Products.FirstOrDefault(p => p.Id.Equals(id));
-        
-        if(product == null)
-            return NotFound("Product not found");
-        
-        if(product.IsArchived)
-            return BadRequest("Product is unavailable");
-        
-        var supplier = FakeSupplierDirectory.Suppliers.FirstOrDefault(s => s.Id.Equals(supplierId));
-
-        if (supplier == null)
-            return NotFound("Supplier not found");
-
-        product.AssignSupplier(supplier);
-        return Ok(product);
+        return Ok(mediator.Send(new AssignSupplierToProductCommand(id, supplierId)));
     }
 }
