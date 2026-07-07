@@ -16,7 +16,11 @@ public class ProductsController : ControllerBase
         // if query variable is true, filter according to availability
         if (onlyAvailable == true)
         {
-            products = products.Where(p => !p.IsArchived && p.QuantityInStock > 0);
+            products = products.Where(p =>
+                !p.IsArchived &&
+                FakeWarehouseStore.Items
+                    .Where(i => i.ProductId == p.Id)
+                    .Sum(i => i.QuantityInStock) > 0);
         }
         
         // return the list sorted by decreasing creation date
@@ -86,7 +90,6 @@ public class ProductsController : ControllerBase
             Sku = request.Sku,
             Description = request.Description,
             Price = request.Price,
-            QuantityInStock = request.QuantityInStock,
             SupplierId = request.SupplierId,
             ExpiryDate = request.ExpiryDate,
             IsArchived = false,
@@ -99,14 +102,14 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPut("{id}/quantity")]
-    public IActionResult UpdateQuantity([FromRoute] string id, [FromBody] int newQuantity)
+    public IActionResult UpdateQuantity([FromRoute] string id, [FromBody] UpdateProductQuantityRequest request)
     {
         // ID should match GUID format
         if (id?.Length != 36)
             return BadRequest("Invalid ID format");
 
         // quantity cannot be negative
-        if (newQuantity < 0)
+        if (request.QuantityInStock < 0)
             return BadRequest("Quantity cannot be negative");
 
         var product = FakeWarehouseStore.Products.FirstOrDefault(p => p.Id.Equals(id));
@@ -116,10 +119,18 @@ public class ProductsController : ControllerBase
             return NotFound();
         }
         
+        var item = FakeWarehouseStore.Items.FirstOrDefault(i =>
+            i.ProductId.Equals(id) &&
+            i.Location.Equals(request.Location, StringComparison.OrdinalIgnoreCase));
+
+        if (item == null)
+            return NotFound($"No warehouse item found in '{request.Location}'");
+        
         // update both the quantity and updated date
-        product.QuantityInStock = newQuantity;
+        item.QuantityInStock = request.QuantityInStock;
+        item.LastStockUpdate = DateTime.Now;
         product.LastUpdatedAt = DateTime.Now;
-        return Ok(product);
+        return Ok(item);
     }
 
     [HttpPut("{id}/price")]
@@ -157,6 +168,11 @@ public class ProductsController : ControllerBase
     // removed [FromQuery] and [FromForm] since they caused runtime errors
     public IActionResult UploadImage(string id, IFormFile image)
     {
+        // check if product exists first
+        var product = FakeWarehouseStore.Products.FirstOrDefault(p => p.Id.Equals(id));
+        if (product == null)
+            return NotFound("Product not found");
+        
         // if file is invalid
         if(image.Length == 0)
             return BadRequest("No image was provided");
@@ -192,6 +208,7 @@ public class ProductsController : ControllerBase
         var productImage = new ProductImage
         {
             Id = Guid.NewGuid().ToString(),
+            ProductId = product.Id,
             FileName = fileName,
             FilePath = filePath
         };
