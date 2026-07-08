@@ -1,6 +1,7 @@
 # Warehouse Management API
 A Warehouse Management API For Managing Warehouse Products Using An In-memory List. The Project Is Built Incrementally During InMind Academy
 
+# Session 2
 ## Features
 
 - Basic CRUD operations for products
@@ -59,3 +60,87 @@ A Warehouse Management API For Managing Warehouse Products Using An In-memory Li
 - Suppliers can be fetched (all/by ID)
 - Suppliers can be created and deleted
 - Products can be linked to a supplier
+
+
+
+# Session 3
+
+## Architecture Refactor
+
+The project has been refactored to follow a layered architecture inspired by Domain-Driven Design (DDD) and CQRS principles. Business logic has been moved out of controllers into dedicated application use cases, while repositories abstract data access and keep the application independent of the underlying storage implementation.
+
+### Project Layers
+
+- **Domain** - Entities, business rules, repository interfaces, and enums.
+- **Application** - Commands, queries, handlers.
+- **Infrastructure** - Repository implementations and in-memory data storage.
+- **Presentation** - API controllers.
+
+## Refactored Endpoints
+
+All endpoints from the previous session continue to function as expected after the architectural refactor.
+
+### Products
+
+- `GET /api/products`
+- `GET /api/products/{id}`
+- `GET /api/products/search`
+- `POST /api/products`
+- `PUT /api/products/{id}/quantity`
+- `PUT /api/products/{id}/price`
+- `POST /api/products/{id}/image`
+- `DELETE /api/products/{id}`
+- `GET /api/products/server-time`
+
+### Suppliers
+
+- `GET /api/suppliers`
+- `GET /api/suppliers/{id}`
+- `POST /api/suppliers`
+- `DELETE /api/suppliers/{id}`
+
+### Product-Supplier Relationship
+
+- `POST /api/products/{id}/assign-supplier/{supplierId}`
+
+## Additional Domain Models
+
+The following new domain entities were introduced:
+
+- **WarehouseItem** - Represents product inventory at a specific warehouse location and manages stock updates.
+- **StockMovement** - Represents stock movement history and distinguishes between stock-in and stock-out operations.
+
+## Design Notes
+
+A few implementation details differ slightly from the original lab requirements:
+
+- Product quantity has been moved from the `Product` entity to the `WarehouseItem` entity to better separate product information from inventory management.
+- Product image handling now references the product through a `ProductId` relationship, and the upload endpoint was updated accordingly.
+- Quantity updates are performed on `WarehouseItem` instead of `Product`, while still updating the product's `LastUpdatedAt` timestamp.
+- `WarehouseItem` and `StockMovement` have been introduced as part of the domain model for future inventory management features. At this stage, they are only partially integrated into the application.
+
+## Unit Tests
+
+The following unit tests were implemented:
+
+### Domain Tests
+
+- Product price cannot be zero or negative.
+- Archived products cannot have their price changed.
+- Inactive suppliers cannot be assigned to products.
+- Warehouse item quantity cannot become negative.
+
+### Application Tests
+
+- Create Product command calls the repository exactly once.
+- Get Product By ID returns a not-found exception when the product does not exist.
+
+## Test Results
+
+All implemented unit tests pass successfully.
+
+## Swagger
+
+Swagger screenshots demonstrating the refactored API are included below.
+
+> **
