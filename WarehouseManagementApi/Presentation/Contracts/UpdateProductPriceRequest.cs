@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Contracts;
+namespace Presentation.Contracts;
 
-public class UpdateProductPriceRequest
+public record UpdateProductPriceRequest
 {
     [Required(ErrorMessage = "Price is required")]
     [Range(0.0, double.MaxValue, ErrorMessage =  "Price cannot be negative")]

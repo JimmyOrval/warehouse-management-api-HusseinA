@@ -1,13 +1,14 @@
-﻿using Domain.Interfaces;
+﻿using Application.DTOs;
+using Domain.Interfaces;
 using Domain.Models;
 using MediatR;
 
 namespace Application.Features.Products.Commands.UpdateProductPrice;
 
 public class UpdateProductPriceCommandHandler(IProductRepository productRepository)
-    : IRequestHandler<UpdateProductPriceCommand, Product>
+    : IRequestHandler<UpdateProductPriceCommand, ProductDto>
 {
-    public async Task<Product> Handle(UpdateProductPriceCommand request, CancellationToken cancellationToken)
+    public async Task<ProductDto> Handle(UpdateProductPriceCommand request, CancellationToken cancellationToken)
     {
         // ID should match GUID format
         if (request.Id?.Length != 36)
@@ -29,6 +30,9 @@ public class UpdateProductPriceCommandHandler(IProductRepository productReposito
         Console.WriteLine("Old price: " + oldPrice + ", Old LastUpdatedAt: " + oldLastUpdatedAt +
                           ", New Price: " + product.Price + ", New LastUpdatedAt: " + product.LastUpdatedAt);
         
-        return product;
+        return new ProductDto(
+            product.Id, product.Name,  product.Sku, product.Description, product.Price,
+            product.SupplierId, product.ExpiryDate, product.IsArchived,
+            product.CreatedAt, product.LastUpdatedAt);
     }
 }

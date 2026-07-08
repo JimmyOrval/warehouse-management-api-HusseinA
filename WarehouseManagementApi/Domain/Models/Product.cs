@@ -61,7 +61,7 @@ public class Product
         if(newPrice<=0)
             throw new ArgumentException("Price must be greater than 0");
         if(IsArchived)
-            throw new InvalidOperationException("Product is not archived");
+            throw new InvalidOperationException("Product is not available");
         
         Price = newPrice;
         LastUpdatedAt = DateTime.Now;

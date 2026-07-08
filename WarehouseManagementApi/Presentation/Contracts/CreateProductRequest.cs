@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Contracts;
+namespace Presentation.Contracts;
 
-public class CreateProductRequest
+public record CreateProductRequest
 {
     [Required(ErrorMessage = "Product name is required")]
     [MaxLength(50, ErrorMessage = "Product name cannot be longer than 50 characters")]

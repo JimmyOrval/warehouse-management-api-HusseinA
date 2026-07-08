@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Contracts;
+namespace Presentation.Contracts;
 
-public class CreateSupplierRequest
+public record CreateSupplierRequest
 {
     [Required(ErrorMessage = "Supplier name is required")]
     [StringLength(100, ErrorMessage = "Supplier name cannot be longer than 100 characters")]

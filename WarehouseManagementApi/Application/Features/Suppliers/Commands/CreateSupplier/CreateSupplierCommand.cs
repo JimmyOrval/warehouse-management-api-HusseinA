@@ -1,6 +1,9 @@
-﻿using Application.Contracts;
-using MediatR;
+﻿using MediatR;
 
 namespace Application.Features.Suppliers.Commands.CreateSupplier;
 
-public record CreateSupplierCommand(CreateSupplierRequest Request) : IRequest<string>;
+public record CreateSupplierCommand(
+    string Name,
+    string Country,
+    string ContactEmail,
+    string Phone) : IRequest<string>;

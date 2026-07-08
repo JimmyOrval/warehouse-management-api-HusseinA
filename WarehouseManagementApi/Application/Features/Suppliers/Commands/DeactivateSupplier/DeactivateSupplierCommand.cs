@@ -1,6 +1,6 @@
-﻿using Domain.Models;
+﻿using Application.DTOs;
 using MediatR;
 
 namespace Application.Features.Suppliers.Commands.DeactivateSupplier;
 
-public record DeactivateSupplierCommand(string Id) : IRequest<Supplier>;
+public record DeactivateSupplierCommand(string Id) : IRequest<SupplierDto>;

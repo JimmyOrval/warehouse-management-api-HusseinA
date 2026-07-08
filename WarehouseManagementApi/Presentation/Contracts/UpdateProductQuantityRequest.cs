@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Contracts;
+namespace Presentation.Contracts;
 
-public class UpdateProductQuantityRequest
+public record UpdateProductQuantityRequest
 {
     [Required(ErrorMessage = "Quantity is required")]
     [Range(0, int.MaxValue, ErrorMessage = "Quantity cannot be negative")]

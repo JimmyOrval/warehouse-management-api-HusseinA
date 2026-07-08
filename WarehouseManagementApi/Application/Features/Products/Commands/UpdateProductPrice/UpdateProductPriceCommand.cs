@@ -1,6 +1,6 @@
-﻿using Domain.Models;
+﻿using Application.DTOs;
 using MediatR;
 
 namespace Application.Features.Products.Commands.UpdateProductPrice;
 
-public record UpdateProductPriceCommand(string Id, decimal NewPrice) : IRequest<Product>;
+public record UpdateProductPriceCommand(string Id, decimal NewPrice) : IRequest<ProductDto>;

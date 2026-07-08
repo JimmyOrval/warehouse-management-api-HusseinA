@@ -1,13 +1,14 @@
-﻿using Domain.Interfaces;
+﻿using Application.DTOs;
+using Domain.Interfaces;
 using Domain.Models;
 using MediatR;
 
 namespace Application.Features.Products.Commands.ArchiveProduct;
 
 public class ArchiveProductCommandHandler(IProductRepository productRepository)
-    : IRequestHandler<ArchiveProductCommand, Product>
+    : IRequestHandler<ArchiveProductCommand, ProductDto>
 {
-    public async Task<Product> Handle(ArchiveProductCommand request, CancellationToken cancellationToken)
+    public async Task<ProductDto> Handle(ArchiveProductCommand request, CancellationToken cancellationToken)
     {
         // ID should match GUID format
         if (request.Id?.Length != 36)
@@ -19,6 +20,9 @@ public class ArchiveProductCommandHandler(IProductRepository productRepository)
             throw new KeyNotFoundException("Product not found");
 
         product.Archive();
-        return product;
+        return new ProductDto(
+            product.Id, product.Name,  product.Sku, product.Description, product.Price,
+            product.SupplierId, product.ExpiryDate, product.IsArchived,
+            product.CreatedAt, product.LastUpdatedAt);
     }
 }

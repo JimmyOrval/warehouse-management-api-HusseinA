@@ -12,10 +12,10 @@ public class CreateSupplierCommandHandler(ISupplierRepository supplierRepository
         var supplier = new Supplier
         {
             Id = Guid.NewGuid().ToString(),
-            Name =  request.Request.Name,
-            Country =  request.Request.Country,
-            ContactEmail = request.Request.ContactEmail,
-            Phone =  request.Request.Phone,
+            Name =  request.Name,
+            Country =  request.Country,
+            ContactEmail = request.ContactEmail,
+            Phone =  request.Phone,
             IsActive = true
         };
         

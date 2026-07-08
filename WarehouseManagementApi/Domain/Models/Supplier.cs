@@ -6,11 +6,11 @@ public class Supplier
 {
     [Key]
     [Required]
-    public required string Id { get; set; }
+    public required string Id { get; init; }
     
     [Required(ErrorMessage = "Supplier name is required")]
     [StringLength(100, ErrorMessage = "Supplier name cannot be longer than 100 characters")]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
     
     [Required(ErrorMessage = "Country is required")]
     [StringLength(57, ErrorMessage = "Country cannot be longer than 57 characters")]
