@@ -1,6 +1,11 @@
 # Warehouse Management API
 A Warehouse Management API For Managing Warehouse Products Using An In-memory List. The Project Is Built Incrementally During InMind Academy
 
+## Table of Contents
+
+- [Session 2](#session-2)
+- [Session 3](#session-3)
+
 # Session 2
 ## Features
 
@@ -135,12 +140,14 @@ The following unit tests were implemented:
 - Create Product command calls the repository exactly once.
 - Get Product By ID returns a not-found exception when the product does not exist.
 
-## Test Results
+### Test Results
 
 All implemented unit tests pass successfully.
 
-## Swagger
+## Screenshots
 
-Swagger screenshots demonstrating the refactored API are included below.
-
-> **
+<img width="624" height="377" alt="Picture1" src="https://github.com/user-attachments/assets/8bc96b5a-fa07-4093-b650-d5e0722c1a14" />
+<img width="624" height="475" alt="Picture2" src="https://github.com/user-attachments/assets/b0864222-91d3-4674-86f2-75e65ef53b43" />
+<img width="624" height="634" alt="Picture3" src="https://github.com/user-attachments/assets/d6304880-0898-4e52-b899-227430d7531b" />
+<img width="624" height="430" alt="Picture4" src="https://github.com/user-attachments/assets/f9508c23-c3af-4e8a-a680-a88078277e0a" />
+<img width="624" height="532" alt="Picture6" src="https://github.com/user-attachments/assets/88cae919-30b7-4c25-8ed9-2c482170281a" />
