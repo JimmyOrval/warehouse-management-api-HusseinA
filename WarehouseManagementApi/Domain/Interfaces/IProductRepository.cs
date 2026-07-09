@@ -4,6 +4,16 @@ namespace Domain.Interfaces;
 
 public interface IProductRepository
 {
+    IEnumerable<Product> GetProductsBySupplier(string supplierName, bool isAscending);
+    
+    IQueryable<IGrouping<int, Product>> GroupByExpiryYear();
+    
+    IQueryable GroupByExpiryYearAndSupplierCountry();
+
+    int GetCount();
+    
+    IEnumerable<Product> GetPagedProducts(int pageNumber, int pageSize);
+    
     IEnumerable<Product> GetAll();
     
     IEnumerable<Product> GetAvailable();

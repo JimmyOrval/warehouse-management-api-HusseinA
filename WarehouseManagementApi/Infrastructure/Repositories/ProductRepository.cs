@@ -1,6 +1,5 @@
 ﻿using Domain.Interfaces;
 using Domain.Models;
-using ProductDb = Infrastructure.Database.Models.Product;
 using Infrastructure.Database.Models;
 using WarehouseManagementApi;
 using Product = Domain.Models.Product;
@@ -9,24 +8,55 @@ namespace Infrastructure.Repositories;
 
 public class ProductRepository(WarehouseDbFirstContext context) : IProductRepository
 {
-    public IEnumerable<ProductDb> Search(string supplierName, bool isAscending)
+    public IEnumerable<Product> GetProductsBySupplier(string supplierName, bool isAscending)
     {
-        var products = context.Products.Where(p => p.Supplier.Name.Equals(supplierName)).ToList();
-        return isAscending
-            ? products.OrderBy(p => p.CreatedAt).ToList()
-            : products.OrderByDescending(p => p.CreatedAt).ToList();
+        var products = context.Products
+            .Where(p => p.Supplier.Name == supplierName)
+            // domain layer can't know about entities scaffolded into
+            // infrastructure layer, so I mapped the DB-generated
+            // product entity into the domain one
+            .Select(p => new Product
+                {
+                    Id = p.Id, Name = p.Name, Sku = p.Sku,
+                    Description = p.Description, Price = p.Price, 
+                    SupplierId = p.SupplierId, ExpiryDate = p.ExpiryDate,
+                    IsArchived = p.IsArchived, CreatedAt = p.CreatedAt,
+                    LastUpdatedAt = p.LastUpdatedAt
+                });
+
+        products = isAscending ? products.OrderBy(p => p.CreatedAt) : products.OrderByDescending(p => p.CreatedAt);
+
+        return products.ToList();
     }
 
-    public IQueryable GroupByExpiryYear()
+    // I chose IQueryable<> instead of IEnumerable<> since the filtering is
+    // happening with SQL rather than in-memory like in the above method
+    public IQueryable<IGrouping<int, Product>> GroupByExpiryYear()
     {
-        return context.Products.GroupBy(p => p.ExpiryDate.Year);
+        return context.Products.GroupBy(p => p.ExpiryDate.Year,
+            p => new Product
+            {
+                Id = p.Id, Name = p.Name, Sku = p.Sku,
+                Description = p.Description, Price = p.Price, 
+                SupplierId = p.SupplierId, ExpiryDate = p.ExpiryDate,
+                IsArchived = p.IsArchived, CreatedAt = p.CreatedAt,
+                LastUpdatedAt = p.LastUpdatedAt
+            });
     }
 
     public IQueryable GroupByExpiryYearAndSupplierCountry()
     {
         return context.Products
-            .GroupBy(p => new {p.ExpiryDate.Year, p.Supplier.Country});
-        // used an anonymous object to simplify table joining
+            // used an anonymous object to simplify table joining
+            .GroupBy(p => new {p.ExpiryDate.Year, p.Supplier.Country},
+                p => new Product()
+                {
+                    Id = p.Id, Name = p.Name, Sku = p.Sku,
+                    Description = p.Description, Price = p.Price, 
+                    SupplierId = p.SupplierId, ExpiryDate = p.ExpiryDate,
+                    IsArchived = p.IsArchived, CreatedAt = p.CreatedAt,
+                    LastUpdatedAt = p.LastUpdatedAt
+                });
     }
 
     public int GetCount()
@@ -34,13 +64,21 @@ public class ProductRepository(WarehouseDbFirstContext context) : IProductReposi
         return context.Products.Count();
     }
 
-    public IEnumerable<ProductDb> GetPagination(int pageNumber, int pageSize)
+    public IEnumerable<Product> GetPagedProducts(int pageNumber, int pageSize)
     {
         return context.Products
             // skips products according to page number and its size
             .Skip((pageNumber - 1) * pageSize)
             // then takes products as much as page can hold
-            .Take(pageSize);
+            .Take(pageSize)
+            .Select(p => new Product
+            {
+                Id = p.Id, Name = p.Name, Sku = p.Sku,
+                Description = p.Description, Price = p.Price, 
+                SupplierId = p.SupplierId, ExpiryDate = p.ExpiryDate,
+                IsArchived = p.IsArchived, CreatedAt = p.CreatedAt,
+                LastUpdatedAt = p.LastUpdatedAt
+            });
     }
     
     public IEnumerable<Product> GetAll()
