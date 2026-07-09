@@ -1,11 +1,48 @@
 ﻿using Domain.Interfaces;
 using Domain.Models;
+using ProductDb = Infrastructure.Database.Models.Product;
+using Infrastructure.Database.Models;
 using WarehouseManagementApi;
+using Product = Domain.Models.Product;
 
 namespace Infrastructure.Repositories;
 
-public class ProductRepository : IProductRepository
+public class ProductRepository(WarehouseDbFirstContext context) : IProductRepository
 {
+    public IEnumerable<ProductDb> Search(string supplierName, bool isAscending)
+    {
+        var products = context.Products.Where(p => p.Supplier.Name.Equals(supplierName)).ToList();
+        return isAscending
+            ? products.OrderBy(p => p.CreatedAt).ToList()
+            : products.OrderByDescending(p => p.CreatedAt).ToList();
+    }
+
+    public IQueryable GroupByExpiryYear()
+    {
+        return context.Products.GroupBy(p => p.ExpiryDate.Year);
+    }
+
+    public IQueryable GroupByExpiryYearAndSupplierCountry()
+    {
+        return context.Products
+            .GroupBy(p => new {p.ExpiryDate.Year, p.Supplier.Country});
+        // used an anonymous object to simplify table joining
+    }
+
+    public int GetCount()
+    {
+        return context.Products.Count();
+    }
+
+    public IEnumerable<ProductDb> GetPagination(int pageNumber, int pageSize)
+    {
+        return context.Products
+            // skips products according to page number and its size
+            .Skip((pageNumber - 1) * pageSize)
+            // then takes products as much as page can hold
+            .Take(pageSize);
+    }
+    
     public IEnumerable<Product> GetAll()
     {
         var products = FakeWarehouseStore.Products.AsEnumerable();
