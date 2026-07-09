@@ -8,7 +8,7 @@ public interface IProductRepository
     
     IQueryable<IGrouping<int, Product>> GroupByExpiryYear();
     
-    IQueryable GroupByExpiryYearAndSupplierCountry();
+    IEnumerable<Product> GroupByExpiryYearAndSupplierCountry();
 
     int GetCount();
     

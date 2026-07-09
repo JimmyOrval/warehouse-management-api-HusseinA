@@ -3,7 +3,12 @@ using Application.Features.Products.Commands.CreateProduct;
 using Application.Features.Products.Commands.UpdateProductPrice;
 using Application.Features.Products.Commands.UpdateProductQuantity;
 using Application.Features.Products.Commands.UploadProductImage;
+using Application.Features.Products.Queries.GetPagedProducts;
 using Application.Features.Products.Queries.GetProductById;
+using Application.Features.Products.Queries.GetProductCount;
+using Application.Features.Products.Queries.GetProductsBySupplier;
+using Application.Features.Products.Queries.GroupByExpiryYear;
+using Application.Features.Products.Queries.GroupByExpiryYearAndSupplierCountry;
 using Application.Features.Products.Queries.ListProducts;
 using Application.Features.Products.Queries.SearchProducts;
 using MediatR;
@@ -91,5 +96,38 @@ public class ProductsController(IMediator mediator) : ControllerBase
         };
 
         return Ok(result);
+    }
+
+    [HttpGet("supplier")]
+    public IActionResult GetProductsBySupplier(
+        [FromQuery] string supplierName,
+        [FromQuery] bool isAscending)
+    {
+        return Ok(mediator.Send(new GetProductsBySupplierQuery
+            (supplierName, isAscending)));
+    }
+
+    [HttpGet("year")]
+    public IActionResult GroupByExpiryYear()
+    {
+        return Ok(mediator.Send(new GroupByExpiryYearQuery()));
+    }
+
+    [HttpGet("year/country")]
+    public IActionResult GroupByExpiryYearAndSupplierCountry()
+    {
+        return Ok(mediator.Send(new GroupByExpiryYearAndSupplierCountryQuery()));
+    }
+
+    [HttpGet("count")]
+    public IActionResult GetCount()
+    {
+        return Ok(mediator.Send(new GetProductCountQuery()));
+    }
+
+    [HttpGet("page")]
+    public IActionResult GetProductsByPage([FromQuery] int pageNumber, [FromQuery] int pageSize)
+    {
+        return Ok(mediator.Send(new GetPagedProductsQuery(pageNumber, pageSize)));
     }
 }

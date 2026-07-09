@@ -44,9 +44,9 @@ public class ProductRepository(WarehouseDbFirstContext context) : IProductReposi
             });
     }
 
-    public IQueryable GroupByExpiryYearAndSupplierCountry()
+    public IEnumerable<Product> GroupByExpiryYearAndSupplierCountry()
     {
-        return context.Products
+        var products = context.Products
             // used an anonymous object to simplify table joining
             .GroupBy(p => new {p.ExpiryDate.Year, p.Supplier.Country},
                 p => new Product()
@@ -57,6 +57,7 @@ public class ProductRepository(WarehouseDbFirstContext context) : IProductReposi
                     IsArchived = p.IsArchived, CreatedAt = p.CreatedAt,
                     LastUpdatedAt = p.LastUpdatedAt
                 });
+        return products.SelectMany(group => group).ToList();
     }
 
     public int GetCount()
