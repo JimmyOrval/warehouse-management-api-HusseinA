@@ -1,7 +1,9 @@
 using Application.Features.Products.Commands.CreateProduct;
 using Application.Features.Suppliers.Commands.CreateSupplier;
 using Domain.Interfaces;
+using Infrastructure.Database.Models;
 using Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,11 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(CreateProductCommand).Assembly);
     cfg.RegisterServicesFromAssembly(typeof(CreateSupplierCommand).Assembly);
 });
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<WarehouseDbFirstContext>(options =>
+    options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
