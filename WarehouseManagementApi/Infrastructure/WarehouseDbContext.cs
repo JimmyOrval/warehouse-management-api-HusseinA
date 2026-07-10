@@ -11,4 +11,29 @@ public class WarehouseDbContext(DbContextOptions<WarehouseDbContext> options)
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<WarehouseItem> WarehouseItems => Set<WarehouseItem>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        
+        builder.Entity<Product>()
+            .HasOne(p => p.Supplier)
+            .WithMany()
+            .HasForeignKey(p => p.SupplierId);
+        
+        builder.Entity<ProductImage>()
+            .HasOne(i => i.Product)
+            .WithMany()
+            .HasForeignKey(i => i.ProductId);
+        
+        builder.Entity<WarehouseItem>()
+            .HasOne(i => i.Product)
+            .WithMany()
+            .HasForeignKey(i => i.ProductId);
+        
+        builder.Entity<StockMovement>()
+            .HasOne(m => m.WarehouseItem)
+            .WithMany()
+            .HasForeignKey(m => m.WarehouseItemId);
+    }
 }
