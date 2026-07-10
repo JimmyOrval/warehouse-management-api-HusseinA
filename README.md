@@ -5,6 +5,7 @@ A Warehouse Management API For Managing Warehouse Products Using An In-memory Li
 
 - [Session 2](#session-2)
 - [Session 3](#session-3)
+- [Session 4](#session-4)
 
 # Session 2
 ## Features
@@ -144,10 +145,61 @@ The following unit tests were implemented:
 
 All implemented unit tests pass successfully.
 
-## Screenshots
 
-<img width="624" height="377" alt="Picture1" src="https://github.com/user-attachments/assets/8bc96b5a-fa07-4093-b650-d5e0722c1a14" />
-<img width="624" height="475" alt="Picture2" src="https://github.com/user-attachments/assets/b0864222-91d3-4674-86f2-75e65ef53b43" />
-<img width="624" height="634" alt="Picture3" src="https://github.com/user-attachments/assets/d6304880-0898-4e52-b899-227430d7531b" />
-<img width="624" height="430" alt="Picture4" src="https://github.com/user-attachments/assets/f9508c23-c3af-4e8a-a680-a88078277e0a" />
-<img width="624" height="532" alt="Picture6" src="https://github.com/user-attachments/assets/88cae919-30b7-4c25-8ed9-2c482170281a" />
+# Session 4
+
+## Database Integration
+
+The project was migrated from an in-memory data store to PostgreSQL using Entity Framework Core Code First. The database schema is managed through EF Core Migrations while preserving the existing layered architecture and API behavior.
+
+## Architecture Updates
+
+The Clean Architecture introduced in the previous session was maintained.
+
+- **Domain** - Business entities and repository interfaces.
+- **Application** - Commands, Queries, ViewModels, AutoMapper, and business use cases.
+- **Infrastructure** - Entity Framework Core DbContext and repository implementations.
+- **Presentation** - API controllers.
+
+## Entity Framework Core
+
+A `WarehouseDbContext` was introduced, which was used to create the database using EF Core migrations, including DbSets for:
+
+- Products
+- Suppliers
+- ProductImages
+- WarehouseItems
+- StockMovements
+
+## AutoMapper
+
+AutoMapper was added to centralize object mapping and reduce repetitive code.
+
+Mappings include:
+
+- Command → Entity
+- Entity → ViewModel
+
+The API now returns ViewModels instead of exposing domain entities directly.
+
+### ViewModels
+
+- ProductViewModel
+- SupplierViewModel
+- ProductImageViewModel
+- WarehouseItemViewModel
+- StockMovementViewModel
+
+## Performance Improvements
+
+Repository queries were updated to better leverage Entity Framework Core.
+
+- Replaced `IEnumerable` filtering with `IQueryable` queries where applicable.
+- Moved filtering and searching to the database instead of in-memory.
+- Used `EF.Functions.ILike` for PostgreSQL case-insensitive searches.
+- Reduced repetition by centralizing object mapping.
+
+## Notes
+
+- Existing endpoints continue to behave as before while using PostgreSQL as the persistence layer.
+- Unused DTOs/Contracts were removed after introducing ViewModels.
