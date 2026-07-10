@@ -1,21 +1,19 @@
-﻿using Application.DTOs;
+﻿using Application.ViewModels;
+using AutoMapper;
 using Domain.Interfaces;
-using Domain.Models;
 using MediatR;
 
 namespace Application.Features.Products.Queries.ListProducts;
 
-public class ListProductsQueryHandler(IProductRepository productRepository)
-    : IRequestHandler<ListProductsQuery, IEnumerable<ProductDto>>
+public class ListProductsQueryHandler(IProductRepository productRepository, IMapper mapper)
+    : IRequestHandler<ListProductsQuery, IEnumerable<ProductViewModel>>
 {
-    public async Task<IEnumerable<ProductDto>> Handle(ListProductsQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<ProductViewModel>> Handle(ListProductsQuery request, CancellationToken cancellationToken)
     {
         var products = request.OnlyAvailable == true
-            ? (List<Product>)productRepository.GetAvailable()
-            : (List<Product>)productRepository.GetAll();
+            ? productRepository.GetAvailable()
+            : productRepository.GetAll();
 
-        return products.Select(p => new ProductDto(
-            p.Id, p.Name, p.Sku, p.Description, p.Price, p.SupplierId, p.ExpiryDate,
-            p.IsArchived, p.CreatedAt, p.LastUpdatedAt)).ToList();
+        return mapper.Map<IEnumerable<ProductViewModel>>(products);
     }
 }

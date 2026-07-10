@@ -1,14 +1,14 @@
-﻿using Application.DTOs;
+﻿using Application.ViewModels;
+using AutoMapper;
 using Domain.Interfaces;
-using Domain.Models;
 using MediatR;
 
 namespace Application.Features.Products.Commands.UpdateProductQuantity;
 
-public class UpdateProductQuantityCommandHandler(IProductRepository productRepository)
-    : IRequestHandler<UpdateProductQuantityCommand, WarehouseItemDto>
+public class UpdateProductQuantityCommandHandler(IProductRepository productRepository, IMapper mapper)
+    : IRequestHandler<UpdateProductQuantityCommand, WarehouseItemViewModel>
 {
-    public async Task<WarehouseItemDto> Handle(UpdateProductQuantityCommand request, CancellationToken cancellationToken)
+    public async Task<WarehouseItemViewModel> Handle(UpdateProductQuantityCommand request, CancellationToken cancellationToken)
     {
         // ID should match GUID format
         if (request.Id?.Length != 36)
@@ -32,8 +32,6 @@ public class UpdateProductQuantityCommandHandler(IProductRepository productRepos
         item.LastStockUpdate = DateTime.Now;
         product.LastUpdatedAt = DateTime.Now;
 
-        return new WarehouseItemDto(
-            item.Id, item.ProductId, item.Location,
-            item.QuantityInStock, item.LastStockUpdate);
+        return mapper.Map<WarehouseItemViewModel>(item);
     }
 }

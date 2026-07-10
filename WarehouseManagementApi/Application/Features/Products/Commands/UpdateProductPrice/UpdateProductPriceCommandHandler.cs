@@ -1,14 +1,14 @@
-﻿using Application.DTOs;
+﻿using Application.ViewModels;
+using AutoMapper;
 using Domain.Interfaces;
-using Domain.Models;
 using MediatR;
 
 namespace Application.Features.Products.Commands.UpdateProductPrice;
 
-public class UpdateProductPriceCommandHandler(IProductRepository productRepository)
-    : IRequestHandler<UpdateProductPriceCommand, ProductDto>
+public class UpdateProductPriceCommandHandler(IProductRepository productRepository, IMapper mapper)
+    : IRequestHandler<UpdateProductPriceCommand, ProductViewModel>
 {
-    public async Task<ProductDto> Handle(UpdateProductPriceCommand request, CancellationToken cancellationToken)
+    public async Task<ProductViewModel> Handle(UpdateProductPriceCommand request, CancellationToken cancellationToken)
     {
         // ID should match GUID format
         if (request.Id?.Length != 36)
@@ -30,9 +30,6 @@ public class UpdateProductPriceCommandHandler(IProductRepository productReposito
         Console.WriteLine("Old price: " + oldPrice + ", Old LastUpdatedAt: " + oldLastUpdatedAt +
                           ", New Price: " + product.Price + ", New LastUpdatedAt: " + product.LastUpdatedAt);
         
-        return new ProductDto(
-            product.Id, product.Name,  product.Sku, product.Description, product.Price,
-            product.SupplierId, product.ExpiryDate, product.IsArchived,
-            product.CreatedAt, product.LastUpdatedAt);
+        return mapper.Map<ProductViewModel>(product);
     }
 }
