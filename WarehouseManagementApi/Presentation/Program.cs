@@ -1,5 +1,6 @@
 using Application.Features.Products.Commands.CreateProduct;
 using Application.Features.Suppliers.Commands.CreateSupplier;
+using Application.Mappings;
 using Domain.Interfaces;
 using Infrastructure;
 using Infrastructure.Repositories;
@@ -26,6 +27,8 @@ builder.Services.AddDbContext<WarehouseDbContext>(options =>
         // to tell migrations to save in infrastructure project
         b => b.MigrationsAssembly("Infrastructure")
     ));
+
+builder.Services.AddAutoMapper(cfg => {}, typeof(ProductMapper).Assembly);
 
 var app = builder.Build();
 
