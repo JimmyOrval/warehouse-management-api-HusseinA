@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+﻿using Application.ViewModels;
 using MediatR;
 
 namespace Application.Features.Products.Commands.UploadProductImage;
@@ -8,4 +8,4 @@ public record UploadProductImageCommand(
     Stream Image,
     long ImageLength,
     string FileName)
-    : IRequest<ProductImageDto>;
+    : IRequest<ProductImageViewModel>;

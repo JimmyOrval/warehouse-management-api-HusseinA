@@ -1,15 +1,17 @@
-﻿using Application.DTOs;
+﻿using Application.ViewModels;
+using AutoMapper;
 using Domain.Interfaces;
-using Domain.Models;
 using MediatR;
 
 namespace Application.Features.Products.Commands.AssignSupplierToProduct;
 
 public class AssignSupplierToProductCommandHandler(
-    IProductRepository productRepository, ISupplierRepository supplierRepository)
-    : IRequestHandler<AssignSupplierToProductCommand, ProductDto>
+    IProductRepository productRepository,
+    ISupplierRepository supplierRepository,
+    IMapper mapper)
+    : IRequestHandler<AssignSupplierToProductCommand, ProductViewModel>
 {
-    public async Task<ProductDto> Handle(AssignSupplierToProductCommand request, CancellationToken cancellationToken)
+    public async Task<ProductViewModel> Handle(AssignSupplierToProductCommand request, CancellationToken cancellationToken)
     {
         var product = productRepository.GetById(request.Id);
         
@@ -25,9 +27,6 @@ public class AssignSupplierToProductCommandHandler(
             throw new KeyNotFoundException("Supplier not found");
         
         product.AssignSupplier(supplier);
-        return new ProductDto(
-            product.Id, product.Name,  product.Sku, product.Description, product.Price,
-            product.SupplierId, product.ExpiryDate, product.IsArchived,
-            product.CreatedAt, product.LastUpdatedAt);
+        return mapper.Map<ProductViewModel>(product);
     }
 }

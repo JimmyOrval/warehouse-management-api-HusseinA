@@ -1,14 +1,15 @@
 ﻿using Application.DTOs;
+using Application.ViewModels;
+using AutoMapper;
 using Domain.Interfaces;
-using Domain.Models;
 using MediatR;
 
 namespace Application.Features.Suppliers.Commands.DeactivateSupplier;
 
-public class DeactivateSupplierCommandHandler(ISupplierRepository supplierRepository)
-    : IRequestHandler<DeactivateSupplierCommand, SupplierDto>
+public class DeactivateSupplierCommandHandler(ISupplierRepository supplierRepository, IMapper mapper)
+    : IRequestHandler<DeactivateSupplierCommand, SupplierViewModel>
 {
-    public async Task<SupplierDto> Handle(DeactivateSupplierCommand request, CancellationToken cancellationToken)
+    public async Task<SupplierViewModel> Handle(DeactivateSupplierCommand request, CancellationToken cancellationToken)
     {
         if (request.Id.Length != 36)
             throw new ArgumentException("Invalid ID format");
@@ -19,8 +20,6 @@ public class DeactivateSupplierCommandHandler(ISupplierRepository supplierReposi
             throw new KeyNotFoundException("Supplier not found");
         
         supplier.IsActive = false;
-        return new SupplierDto(
-            supplier.Id, supplier.Name, supplier.Country,
-            supplier.ContactEmail, supplier.Phone, supplier.IsActive);
+        return mapper.Map<SupplierViewModel>(supplier);
     }
 }

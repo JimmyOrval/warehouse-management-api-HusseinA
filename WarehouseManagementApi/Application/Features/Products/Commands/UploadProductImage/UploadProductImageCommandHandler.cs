@@ -1,14 +1,15 @@
-﻿using Application.DTOs;
+﻿using Application.ViewModels;
+using AutoMapper;
 using Domain.Interfaces;
 using Domain.Models;
 using MediatR;
 
 namespace Application.Features.Products.Commands.UploadProductImage;
 
-public class UploadProductImageCommandHandler(IProductRepository productRepository)
-    : IRequestHandler<UploadProductImageCommand, ProductImageDto>
+public class UploadProductImageCommandHandler(IProductRepository productRepository, IMapper mapper)
+    : IRequestHandler<UploadProductImageCommand, ProductImageViewModel>
 {
-    public async Task<ProductImageDto> Handle(UploadProductImageCommand request, CancellationToken cancellationToken)
+    public async Task<ProductImageViewModel> Handle(UploadProductImageCommand request, CancellationToken cancellationToken)
     {
         // check if product exists first
         var product = productRepository.GetById(request.ProductId);
@@ -61,7 +62,6 @@ public class UploadProductImageCommandHandler(IProductRepository productReposito
         // copy the image to the uploads using the file stream
         await request.Image.CopyToAsync(fileStream, cancellationToken);
         
-        return new ProductImageDto(
-            productImage.Id, productImage.ProductId, productImage.FileName, productImage.FilePath);
+        return mapper.Map<ProductImageViewModel>(productImage);
     }
 }

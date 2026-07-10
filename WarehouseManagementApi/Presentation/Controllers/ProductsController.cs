@@ -1,4 +1,5 @@
-﻿using Application.Features.Products.Commands.ArchiveProduct;
+﻿using Application.Contracts;
+using Application.Features.Products.Commands.ArchiveProduct;
 using Application.Features.Products.Commands.CreateProduct;
 using Application.Features.Products.Commands.UpdateProductPrice;
 using Application.Features.Products.Commands.UpdateProductQuantity;
@@ -6,15 +7,15 @@ using Application.Features.Products.Commands.UploadProductImage;
 using Application.Features.Products.Queries.GetProductById;
 using Application.Features.Products.Queries.ListProducts;
 using Application.Features.Products.Queries.SearchProducts;
+using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Contracts;
 
 namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProductsController(IMediator mediator) : ControllerBase
+public class ProductsController(IMediator mediator, IMapper mapper) : ControllerBase
 {
     [HttpGet]
     public IActionResult GetProducts([FromQuery] bool? onlyAvailable = true)
@@ -36,11 +37,9 @@ public class ProductsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult CreateProduct([FromBody] CreateProductRequest request)
+    public IActionResult CreateProduct([FromBody] CreateProductCommand command)
     {
-        var productId = mediator.Send(new CreateProductCommand(
-            request.Name, request.Sku, request.Description,
-            request.Price, request.SupplierId, request.ExpiryDate));
+        var productId = mediator.Send(command);
         
         return CreatedAtAction(nameof(GetProductById), new { id = productId }, null);
     }
