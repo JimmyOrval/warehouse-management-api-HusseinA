@@ -23,6 +23,7 @@ public class ArchiveProductCommandHandler(
             throw new KeyNotFoundException("Product not found");
 
         product.Archive();
+        productRepository.SaveChanges();
         return mapper.Map<ProductViewModel>(product);
     }
 }

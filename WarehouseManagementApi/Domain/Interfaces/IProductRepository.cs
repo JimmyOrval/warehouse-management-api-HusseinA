@@ -16,9 +16,9 @@ public interface IProductRepository
     
     void Add(Product product);
     
-    void Update(Product product);
-    
-    void Delete(string id);
+    void Delete(Product product);
+
+    void SaveChanges();
 
     WarehouseItem? GetWarehouseItem(string productId, string location);
     

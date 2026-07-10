@@ -1,81 +1,86 @@
 ﻿using Domain.Interfaces;
 using Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using WarehouseManagementApi;
 
 namespace Infrastructure.Repositories;
 
-public class ProductRepository : IProductRepository
+public class ProductRepository(WarehouseDbContext context) : IProductRepository
 {
     public IEnumerable<Product> GetAll()
     {
-        var products = FakeWarehouseStore.Products.AsEnumerable();
+        var products = context.Products.AsEnumerable();
         return products.OrderByDescending(p => p.CreatedAt).ToList();
     }
 
     public IEnumerable<Product> GetAvailable()
     {
-        var items = FakeWarehouseStore.Items
+        var items = context.WarehouseItems
             .ToLookup(i => i.ProductId, i => i.QuantityInStock);
 
-        return FakeWarehouseStore.Products
+        return context.Products
             .Where(p => !p.IsArchived && items[p.Id].Sum() > 0)
             .OrderByDescending(p => p.CreatedAt);
     }
 
     public Product? GetById(string id)
     {
-        return FakeWarehouseStore.Products.FirstOrDefault(x => x.Id.Equals(id));
+        return context.Products.FirstOrDefault(x => x.Id == id);
     }
 
     public IEnumerable<Product> Search(string? name, string? supplier)
     {
-        var filteredProducts = FakeWarehouseStore.Products.AsEnumerable();
+        IQueryable<Product> products = context.Products;
 
         // if name filter available, filter according to name
         if(!string.IsNullOrWhiteSpace(name))
         {
-            filteredProducts = filteredProducts.Where(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+            products = products.Where(p =>
+                // ILike ignores case, since EFCore can't
+                // translate OrdinalIgnoreCase into SQL
+                EF.Functions.ILike(p.Name, $"{name}%"));
         }
 
         // if name filter available, filter according to supplier
         if(!string.IsNullOrWhiteSpace(supplier))
         {
-            filteredProducts = filteredProducts.Where(p => 
-                FakeSupplierDirectory.Suppliers.Any(s => 
-                    s.Id == p.SupplierId && 
-                    s.Name.Contains(supplier, StringComparison.OrdinalIgnoreCase)
+            products = products.Where(p => 
+                context.Suppliers.Any(s => 
+                    s.Id == p.SupplierId &&
+                    EF.Functions.ILike(s.Name, $"{supplier}%")
                 )
             );
         }
-        return filteredProducts;
+        return products;
     }
 
     public bool SkuExists(string sku)
     {
-        return FakeWarehouseStore.Products
-            .Any(p => p.Sku.Equals(sku, StringComparison.OrdinalIgnoreCase));
+        return context.Products.Any(p => p.Sku == sku);
     }
 
     public void Add(Product product)
     {
-        FakeWarehouseStore.Products.Add(product);
+        context.Products.Add(product);
     }
 
-    public void Update(Product product)
+    public void Delete(Product product)
     {
-        throw new NotImplementedException();
+        context.Products.Remove(product);
     }
 
-    public void Delete(string id)
+    public void SaveChanges()
     {
-        throw new NotImplementedException();
+        context.SaveChanges();
     }
 
+    // I will later create a separate WarehouseItem
+    // repository for the following methods
     public WarehouseItem? GetWarehouseItem(string productId, string location)
     {
-        return FakeWarehouseStore.Items.FirstOrDefault(i =>
-            i.ProductId.Equals(productId) &&
-            i.Location.Equals(location, StringComparison.OrdinalIgnoreCase));
+        return context.WarehouseItems.FirstOrDefault(i =>
+            i.ProductId == productId &&
+            EF.Functions.ILike(i.Location, $"{location}%"));
     }
 
     public IEnumerable<WarehouseItem> GetWarehouseItems(string productId)
@@ -90,7 +95,7 @@ public class ProductRepository : IProductRepository
     
     public int GetQuantity(string productId)
     {
-        return FakeWarehouseStore.Items
+        return context.WarehouseItems
             .Where(i => i.ProductId == productId)
             .Sum(i => i.QuantityInStock);
     }

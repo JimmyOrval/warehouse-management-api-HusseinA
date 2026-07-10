@@ -19,6 +19,7 @@ public class CreateProductCommandHandler(IProductRepository productRepository, I
         var product = mapper.Map<Product>(request);
         
         productRepository.Add(product);
+        productRepository.SaveChanges();
         return product.Id;
     }
 }

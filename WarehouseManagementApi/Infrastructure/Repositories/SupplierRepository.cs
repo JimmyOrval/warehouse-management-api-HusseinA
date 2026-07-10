@@ -4,26 +4,31 @@ using WarehouseManagementApi;
 
 namespace Infrastructure.Repositories;
 
-public class SupplierRepository : ISupplierRepository
+public class SupplierRepository(WarehouseDbContext context) : ISupplierRepository
 {
     public IEnumerable<Supplier> GetAll()
     {
-        return FakeSupplierDirectory.Suppliers.ToList();
+        return context.Suppliers.ToList();
     }
 
     public Supplier? GetById(string id)
     {
-        return FakeSupplierDirectory.Suppliers.FirstOrDefault(s => s.Id.Equals(id));
+        return context.Suppliers.FirstOrDefault(s => s.Id.Equals(id));
     }
 
     public string Add(Supplier supplier)
     {
-        FakeSupplierDirectory.Suppliers.Add(supplier);
+        context.Suppliers.Add(supplier);
         return supplier.Id;
     }
 
-    public void Delete(string id)
+    public void Delete(Supplier supplier)
     {
-        throw new NotImplementedException();
+        context.Suppliers.Remove(supplier);
+    }
+
+    public void SaveChanges()
+    {
+        context.SaveChanges();
     }
 }

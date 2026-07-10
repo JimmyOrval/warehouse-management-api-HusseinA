@@ -32,6 +32,7 @@ public class UpdateProductQuantityCommandHandler(IProductRepository productRepos
         item.LastStockUpdate = DateTime.Now;
         product.LastUpdatedAt = DateTime.Now;
 
+        productRepository.SaveChanges();
         return mapper.Map<WarehouseItemViewModel>(item);
     }
 }

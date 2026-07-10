@@ -10,5 +10,7 @@ public interface ISupplierRepository
 
     string Add(Supplier supplier);
     
-    void Delete(string id);
+    void Delete(Supplier supplier);
+    
+    void SaveChanges();
 }
