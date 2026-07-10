@@ -1,5 +1,4 @@
-﻿using Application.DTOs;
-using Application.ViewModels;
+﻿using Application.ViewModels;
 using AutoMapper;
 using Domain.Interfaces;
 using MediatR;
