@@ -30,6 +30,7 @@ public class UpdateProductPriceCommandHandler(IProductRepository productReposito
         Console.WriteLine("Old price: " + oldPrice + ", Old LastUpdatedAt: " + oldLastUpdatedAt +
                           ", New Price: " + product.Price + ", New LastUpdatedAt: " + product.LastUpdatedAt);
         
+        productRepository.SaveChanges();
         return mapper.Map<ProductViewModel>(product);
     }
 }

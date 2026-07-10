@@ -49,6 +49,7 @@ public class UploadProductImageCommandHandler(IProductRepository productReposito
         // combine full path with new file name
         var filePath = Path.Combine(uploadFolderPath, fileName);
 
+        // had to keep manually mapped since FilePath is code-generated not input 
         var productImage = new ProductImage
         {
             Id = Guid.NewGuid().ToString(),

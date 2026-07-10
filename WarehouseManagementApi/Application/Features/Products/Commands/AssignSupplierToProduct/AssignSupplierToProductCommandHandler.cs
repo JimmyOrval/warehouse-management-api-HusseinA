@@ -27,6 +27,7 @@ public class AssignSupplierToProductCommandHandler(
             throw new KeyNotFoundException("Supplier not found");
         
         product.AssignSupplier(supplier);
+        productRepository.SaveChanges();
         return mapper.Map<ProductViewModel>(product);
     }
 }
