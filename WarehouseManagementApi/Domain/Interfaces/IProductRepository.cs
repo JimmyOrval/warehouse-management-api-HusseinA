@@ -25,6 +25,6 @@ public interface IProductRepository
     IEnumerable<WarehouseItem> GetWarehouseItems(string productId);
     
     void UpdateWarehouseItem(WarehouseItem warehouseItem);
-
-    int GetTotalQuantity(string productId);
+    
+    int GetQuantity(string productId);
 }

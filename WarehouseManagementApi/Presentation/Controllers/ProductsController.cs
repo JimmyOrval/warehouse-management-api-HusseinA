@@ -1,5 +1,4 @@
-﻿using Application.Contracts;
-using Application.Features.Products.Commands.ArchiveProduct;
+﻿using Application.Features.Products.Commands.ArchiveProduct;
 using Application.Features.Products.Commands.CreateProduct;
 using Application.Features.Products.Commands.UpdateProductPrice;
 using Application.Features.Products.Commands.UpdateProductQuantity;
@@ -44,10 +43,13 @@ public class ProductsController(IMediator mediator, IMapper mapper) : Controller
         return CreatedAtAction(nameof(GetProductById), new { id = productId }, null);
     }
 
-    [HttpPut("{id}/quantity")]
-    public IActionResult UpdateQuantity([FromRoute] string id, [FromBody] UpdateProductQuantityRequest request)
+    [HttpPut("{id}/quantity/{location}")]
+    public IActionResult UpdateQuantity([FromRoute] string id,
+        [FromBody] int quantity, [FromRoute] string location)
     {
-        return Ok(mediator.Send(new UpdateProductQuantityCommand(id, request.Quantity, request.Location)));
+        return Ok(mediator.Send(new
+            UpdateProductQuantityCommand(
+                id, quantity, location)));
     }
 
     [HttpPut("{id}/price")]

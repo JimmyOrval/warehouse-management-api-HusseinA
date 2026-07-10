@@ -1,5 +1,5 @@
-﻿using Application.Contracts;
-using Application.Features.Products.Commands.CreateProduct;
+﻿using Application.Features.Products.Commands.CreateProduct;
+using Application.Features.Suppliers.Commands.CreateSupplier;
 using AutoMapper;
 using Domain.Models;
 
@@ -10,6 +10,6 @@ public class RequestMapper : Profile
     public RequestMapper()
     {
         CreateMap<CreateProductCommand, Product>();
-        CreateMap<CreateSupplierRequest, Supplier>();
+        CreateMap<CreateSupplierCommand, Supplier>();
     }
 }
