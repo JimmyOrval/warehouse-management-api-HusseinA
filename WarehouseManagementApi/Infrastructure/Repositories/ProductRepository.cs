@@ -14,13 +14,12 @@ public class ProductRepository : IProductRepository
 
     public IEnumerable<Product> GetAvailable()
     {
-        var products = FakeWarehouseStore.Products.AsEnumerable();
-        products = products.Where(p =>
-            !p.IsArchived &&
-            FakeWarehouseStore.Items
-                .Where(i => i.ProductId == p.Id)
-                .Sum(i => i.QuantityInStock) > 0);
-        return products.OrderByDescending(p => p.CreatedAt).ToList();
+        var items = FakeWarehouseStore.Items
+            .ToLookup(i => i.ProductId, i => i.QuantityInStock);
+
+        return FakeWarehouseStore.Products
+            .Where(p => !p.IsArchived && items[p.Id].Sum() > 0)
+            .OrderByDescending(p => p.CreatedAt);
     }
 
     public Product? GetById(string id)
@@ -88,9 +87,11 @@ public class ProductRepository : IProductRepository
     {
         throw new NotImplementedException();
     }
-
-    public int GetTotalQuantity(string productId)
+    
+    public int GetQuantity(string productId)
     {
-        throw new NotImplementedException();
+        return FakeWarehouseStore.Items
+            .Where(i => i.ProductId == productId)
+            .Sum(i => i.QuantityInStock);
     }
 }
