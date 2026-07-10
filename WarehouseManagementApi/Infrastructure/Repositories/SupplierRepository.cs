@@ -1,6 +1,5 @@
 ﻿using Domain.Interfaces;
 using Domain.Models;
-using WarehouseManagementApi;
 
 namespace Infrastructure.Repositories;
 

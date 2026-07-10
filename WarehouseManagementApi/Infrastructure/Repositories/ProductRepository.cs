@@ -1,7 +1,6 @@
 ﻿using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using WarehouseManagementApi;
 
 namespace Infrastructure.Repositories;
 

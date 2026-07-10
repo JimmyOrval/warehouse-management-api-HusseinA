@@ -1,4 +1,5 @@
 ﻿using Application.Features.Products.Queries.GetProductById;
+using AutoMapper;
 using Domain.Interfaces;
 using Domain.Models;
 using Moq;
@@ -11,12 +12,13 @@ public class GetProductByIdQueryHandlerTests
     public async Task Handle_ShouldThrow_WhenProductDoesNotExist()
     {
         var repository = new Mock<IProductRepository>();
+        var mockMapper = new Mock<IMapper>(); 
 
         repository
             .Setup(r => r.GetById(It.IsAny<string>()))
             .Returns((Product?)null);
 
-        var handler = new GetProductByIdQueryHandler(repository.Object);
+        var handler = new GetProductByIdQueryHandler(repository.Object, mockMapper.Object);
 
         var query = new GetProductByIdQuery(Guid.NewGuid().ToString());
 
