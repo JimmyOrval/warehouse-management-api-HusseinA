@@ -73,6 +73,46 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
     {
         context.SaveChanges();
     }
+    
+    public IEnumerable<Product> GetProductsBySupplier(string supplierName, bool isAscending)
+    {
+        var products = context.Products
+            .Where(p => p.Supplier!.Name == supplierName);
+
+        products = isAscending ? products.OrderBy(p => p.CreatedAt) : products.OrderByDescending(p => p.CreatedAt);
+
+        return products;
+    }
+
+    // I chose IQueryable<> instead of IEnumerable<> since the filtering is
+    // happening with SQL rather than in-memory like in the above method
+    public IQueryable<IGrouping<int, Product>> GroupByExpiryYear()
+    {
+        return context.Products.GroupBy(p => p.ExpiryDate.Year);
+    }
+
+    public IEnumerable<Product> GroupByExpiryYearAndSupplierCountry()
+    {
+        var products = context.Products
+            // used an anonymous object to simplify table joining
+            .GroupBy(p => new {p.ExpiryDate.Year, p.Supplier!.Country});
+        
+        return products.SelectMany(group => group).ToList();
+    }
+
+    public int GetCount()
+    {
+        return context.Products.Count();
+    }
+
+    public IEnumerable<Product> GetPagedProducts(int pageNumber, int pageSize)
+    {
+        return context.Products
+            // skips products according to page number and its size
+            .Skip((pageNumber - 1) * pageSize)
+            // then takes products as much as page can hold
+            .Take(pageSize).AsEnumerable();
+    }
 
     // I will later create a separate WarehouseItem
     // repository for the following methods

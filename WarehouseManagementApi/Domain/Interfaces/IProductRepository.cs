@@ -27,4 +27,14 @@ public interface IProductRepository
     void UpdateWarehouseItem(WarehouseItem warehouseItem);
     
     int GetQuantity(string productId);
+    
+    IEnumerable<Product> GetProductsBySupplier(string supplierName, bool isAscending);
+    
+    IQueryable<IGrouping<int, Product>> GroupByExpiryYear();
+    
+    IEnumerable<Product> GroupByExpiryYearAndSupplierCountry();
+
+    int GetCount();
+    
+    IEnumerable<Product> GetPagedProducts(int pageNumber, int pageSize);
 }
