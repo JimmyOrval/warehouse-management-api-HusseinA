@@ -19,7 +19,7 @@ namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProductsController(IMediator mediator, IMapper mapper) : ControllerBase
+public class ProductsController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetProducts([FromQuery] bool? onlyAvailable = true)

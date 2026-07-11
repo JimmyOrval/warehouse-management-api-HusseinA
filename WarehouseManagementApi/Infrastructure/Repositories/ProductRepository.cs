@@ -9,6 +9,7 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
     public async Task<IEnumerable<Product>> GetAll()
     {
         return await context.Products
+            .Include(p => p.Supplier)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
     }
@@ -16,6 +17,7 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
     public IQueryable<Product> GetAvailable()
     {
         return context.Products
+            .Include(p => p.Supplier)
             .Where(p =>
                 !p.IsArchived &&
                 context.WarehouseItems
@@ -27,7 +29,9 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
 
     public async Task<Product?> GetById(string id)
     {
-        return await context.Products.FirstOrDefaultAsync(x => x.Id == id);
+        return await context.Products
+            .Include(p => p.Supplier)
+            .FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public IQueryable<Product> Search(string? name, string? supplier)
@@ -37,7 +41,9 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
         // if name filter available, filter according to name
         if(!string.IsNullOrWhiteSpace(name))
         {
-            products = products.Where(p =>
+            products = products
+                .Include(p => p.Supplier)
+                .Where(p =>
                 // ILike ignores case, since EFCore can't
                 // translate OrdinalIgnoreCase into SQL
                 EF.Functions.ILike(p.Name, $"{name}%"));
@@ -46,7 +52,9 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
         // if name filter available, filter according to supplier
         if(!string.IsNullOrWhiteSpace(supplier))
         {
-            products = products.Where(p => 
+            products = products
+                .Include(p => p.Supplier)
+                .Where(p => 
                 context.Suppliers.Any(s => 
                     s.Id == p.SupplierId &&
                     EF.Functions.ILike(s.Name, $"{supplier}%")
@@ -79,29 +87,27 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
     public IQueryable<Product> GetProductsBySupplier(string supplierName, bool isAscending)
     {
         var products = context.Products
+            .Include(p => p.Supplier)
             .Where(p => p.Supplier != null &&
-                        p.Supplier.Name == supplierName);
+                        EF.Functions.ILike(p.Supplier.Name, $"{supplierName}%"));
 
         products = isAscending ? products.OrderBy(p => p.CreatedAt) : products.OrderByDescending(p => p.CreatedAt);
 
         return products;
     }
-
-    // I chose IQueryable<> instead of IEnumerable<> since the filtering is
-    // happening with SQL rather than in-memory like in the above method
+    
     public IQueryable<IGrouping<int, Product>> GroupByExpiryYear()
     {
-        return context.Products.GroupBy(p => p.ExpiryDate.Year);
+        return context.Products
+            .Include(p => p.Supplier)
+            .GroupBy(p => p.ExpiryDate.Year);
     }
 
     public IQueryable<IGrouping<object, Product>> GroupByExpiryYearAndSupplierCountry()
     {
         return context.Products
-            .GroupBy(p => new
-            {
-                p.ExpiryDate.Year,
-                p.Supplier!.Country
-            });
+            .Include(p => p.Supplier)
+            .GroupBy(p => new { Year = p.ExpiryDate.Year, Country = p.Supplier!.Country });
     }
 
     public async Task<int> GetCount()
@@ -112,6 +118,7 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
     public IQueryable<Product> GetPagedProducts(int pageNumber, int pageSize)
     {
         return context.Products
+            .Include(p => p.Supplier)
             .OrderBy(p => p.Id)
             // skips products according to page number and its size
             .Skip((pageNumber - 1) * pageSize)

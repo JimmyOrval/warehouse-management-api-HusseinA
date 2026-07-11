@@ -2,6 +2,7 @@
 using AutoMapper;
 using Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.Products.Queries.GroupByExpiryYearAndSupplierCountry;
 
@@ -10,8 +11,11 @@ public class GroupByExpiryYearAndSupplierCountryQueryHandler(IProductRepository 
 {
     public async Task<IEnumerable<ProductViewModel>> Handle(GroupByExpiryYearAndSupplierCountryQuery request, CancellationToken cancellationToken)
     {
-        var products = productRepository.GroupByExpiryYearAndSupplierCountry();
-        
+        var products = (await productRepository
+                .GroupByExpiryYearAndSupplierCountry()
+                .ToListAsync(cancellationToken))
+            .SelectMany(g => g);
+
         return mapper.Map<IEnumerable<ProductViewModel>>(products);
     }
 }
