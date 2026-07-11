@@ -18,7 +18,7 @@ public class UpdateProductQuantityCommandHandler(IProductRepository productRepos
         if (request.Quantity < 0)
             throw new ArgumentException("Quantity cannot be negative");
 
-        var product = productRepository.GetById(request.Id);
+        var product = await productRepository.GetById(request.Id);
 
         if (product == null)
             throw new KeyNotFoundException("Product not found");
@@ -32,7 +32,8 @@ public class UpdateProductQuantityCommandHandler(IProductRepository productRepos
         item.LastStockUpdate = DateTime.Now;
         product.LastUpdatedAt = DateTime.Now;
 
-        productRepository.SaveChanges();
+        await productRepository.SaveChangesAsync();
+        
         return mapper.Map<WarehouseItemViewModel>(item);
     }
 }

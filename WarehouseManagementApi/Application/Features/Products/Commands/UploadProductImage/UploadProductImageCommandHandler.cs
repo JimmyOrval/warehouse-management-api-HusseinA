@@ -12,7 +12,7 @@ public class UploadProductImageCommandHandler(IProductRepository productReposito
     public async Task<ProductImageViewModel> Handle(UploadProductImageCommand request, CancellationToken cancellationToken)
     {
         // check if product exists first
-        var product = productRepository.GetById(request.ProductId);
+        var product = await productRepository.GetById(request.ProductId);
         
         if (product == null)
             throw new KeyNotFoundException("Product not found");

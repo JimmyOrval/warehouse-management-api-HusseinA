@@ -22,59 +22,59 @@ namespace Presentation.Controllers;
 public class ProductsController(IMediator mediator, IMapper mapper) : ControllerBase
 {
     [HttpGet]
-    public IActionResult GetProducts([FromQuery] bool? onlyAvailable = true)
+    public async Task<IActionResult> GetProducts([FromQuery] bool? onlyAvailable = true)
     {
-        return Ok(mediator.Send(new ListProductsQuery(onlyAvailable)));
+        return Ok(await mediator.Send(new ListProductsQuery(onlyAvailable)));
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetProductById([FromRoute] string id)
+    public async Task<IActionResult> GetProductById([FromRoute] string id)
     {
-        var product = mediator.Send(new GetProductByIdQuery(id));
+        var product = await mediator.Send(new GetProductByIdQuery(id));
         return Ok(product);
     }
 
     [HttpGet("search")]
-    public IActionResult Search([FromQuery] string? name, [FromQuery] string? supplier)
+    public async Task<IActionResult> Search([FromQuery] string? name, [FromQuery] string? supplier)
     {
-        return Ok(mediator.Send(new SearchProductsQuery(name, supplier)));
+        return Ok(await mediator.Send(new SearchProductsQuery(name, supplier)));
     }
 
     [HttpPost]
-    public IActionResult CreateProduct([FromBody] CreateProductCommand command)
+    public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command)
     {
-        var productId = mediator.Send(command);
+        var productId = await mediator.Send(command);
         
         return CreatedAtAction(nameof(GetProductById), new { id = productId }, null);
     }
 
     [HttpPut("{id}/quantity/{location}")]
-    public IActionResult UpdateQuantity([FromRoute] string id,
+    public async Task<IActionResult> UpdateQuantity([FromRoute] string id,
         [FromBody] int quantity, [FromRoute] string location)
     {
-        return Ok(mediator.Send(new
+        return Ok(await mediator.Send(new
             UpdateProductQuantityCommand(
                 id, quantity, location)));
     }
 
     [HttpPut("{id}/price")]
-    public IActionResult UpdatePrice([FromRoute] string id, [FromBody] decimal newPrice)
+    public async Task<IActionResult> UpdatePrice([FromRoute] string id, [FromBody] decimal newPrice)
     {
-        return Ok(mediator.Send(new UpdateProductPriceCommand(id, newPrice)));
+        return Ok(await mediator.Send(new UpdateProductPriceCommand(id, newPrice)));
     }
 
     [HttpPost("{id}/image")]
-    public IActionResult UploadImage(string id, IFormFile image)
+    public async Task<IActionResult> UploadImage(string id, IFormFile image)
     {
-        using var stream = image.OpenReadStream();
-        return Ok(mediator.Send(new UploadProductImageCommand(
+        await using var stream = image.OpenReadStream();
+        return Ok(await mediator.Send(new UploadProductImageCommand(
             id, stream, image.Length, image.FileName)));
     }
 
     [HttpDelete("{id}")]
-    public IActionResult DeleteProduct([FromRoute] string id)
+    public async Task<IActionResult> DeleteProduct([FromRoute] string id)
     {
-        mediator.Send(new ArchiveProductCommand(id));
+        await mediator.Send(new ArchiveProductCommand(id));
         return NoContent();
     }
     
@@ -100,35 +100,35 @@ public class ProductsController(IMediator mediator, IMapper mapper) : Controller
     }
     
     [HttpGet("supplier")]
-    public IActionResult GetProductsBySupplier(
+    public async Task<IActionResult> GetProductsBySupplier(
         [FromQuery] string supplierName,
         [FromQuery] bool isAscending)
     {
-        return Ok(mediator.Send(new GetProductsBySupplierQuery
+        return Ok(await mediator.Send(new GetProductsBySupplierQuery
             (supplierName, isAscending)));
     }
 
     [HttpGet("year")]
-    public IActionResult GroupByExpiryYear()
+    public async Task<IActionResult> GroupByExpiryYear()
     {
-        return Ok(mediator.Send(new GroupByExpiryYearQuery()));
+        return Ok(await mediator.Send(new GroupByExpiryYearQuery()));
     }
 
     [HttpGet("year/country")]
-    public IActionResult GroupByExpiryYearAndSupplierCountry()
+    public async Task<IActionResult> GroupByExpiryYearAndSupplierCountry()
     {
-        return Ok(mediator.Send(new GroupByExpiryYearAndSupplierCountryQuery()));
+        return Ok(await mediator.Send(new GroupByExpiryYearAndSupplierCountryQuery()));
     }
 
     [HttpGet("count")]
-    public IActionResult GetCount()
+    public async Task<IActionResult> GetCount()
     {
-        return Ok(mediator.Send(new GetProductCountQuery()));
+        return Ok(await mediator.Send(new GetProductCountQuery()));
     }
 
     [HttpGet("page")]
-    public IActionResult GetProductsByPage([FromQuery] int pageNumber, [FromQuery] int pageSize)
+    public async Task<IActionResult> GetProductsByPage([FromQuery] int pageNumber, [FromQuery] int pageSize)
     {
-        return Ok(mediator.Send(new GetPagedProductsQuery(pageNumber, pageSize)));
+        return Ok(await mediator.Send(new GetPagedProductsQuery(pageNumber, pageSize)));
     }
 }

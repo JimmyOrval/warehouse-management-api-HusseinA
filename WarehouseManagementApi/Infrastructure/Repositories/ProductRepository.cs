@@ -6,11 +6,11 @@ namespace Infrastructure.Repositories;
 
 public class ProductRepository(WarehouseDbContext context) : IProductRepository
 {
-    public IEnumerable<Product> GetAll()
+    public async Task<IEnumerable<Product>> GetAll()
     {
-        return context.Products
+        return await context.Products
             .OrderByDescending(p => p.CreatedAt)
-            .ToList();
+            .ToListAsync();
     }
 
     public IQueryable<Product> GetAvailable()
@@ -25,9 +25,9 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
             .OrderByDescending(p => p.CreatedAt);
     }
 
-    public Product? GetById(string id)
+    public async Task<Product?> GetById(string id)
     {
-        return context.Products.FirstOrDefault(x => x.Id == id);
+        return await context.Products.FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public IQueryable<Product> Search(string? name, string? supplier)
@@ -56,9 +56,9 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
         return products;
     }
 
-    public bool SkuExists(string sku)
+    public async Task<bool> SkuExists(string sku)
     {
-        return context.Products.Any(p => p.Sku == sku);
+        return await context.Products.AnyAsync(p => p.Sku == sku);
     }
 
     public void Add(Product product)
@@ -71,9 +71,9 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
         context.Products.Remove(product);
     }
 
-    public void SaveChanges()
+    public async Task SaveChangesAsync()
     {
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
     
     public IQueryable<Product> GetProductsBySupplier(string supplierName, bool isAscending)
@@ -104,9 +104,9 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
             });
     }
 
-    public int GetCount()
+    public async Task<int> GetCount()
     {
-        return context.Products.Count();
+        return await context.Products.CountAsync();
     }
 
     public IQueryable<Product> GetPagedProducts(int pageNumber, int pageSize)

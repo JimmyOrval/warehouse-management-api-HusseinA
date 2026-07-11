@@ -13,7 +13,7 @@ public class AssignSupplierToProductCommandHandler(
 {
     public async Task<ProductViewModel> Handle(AssignSupplierToProductCommand request, CancellationToken cancellationToken)
     {
-        var product = productRepository.GetById(request.Id);
+        var product = await productRepository.GetById(request.Id);
         
         if(product == null)
             throw new KeyNotFoundException("Product not found");
@@ -27,7 +27,8 @@ public class AssignSupplierToProductCommandHandler(
             throw new KeyNotFoundException("Supplier not found");
         
         product.AssignSupplier(supplier);
-        productRepository.SaveChanges();
+        await productRepository.SaveChangesAsync();
+        
         return mapper.Map<ProductViewModel>(product);
     }
 }

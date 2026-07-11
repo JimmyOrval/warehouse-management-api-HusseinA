@@ -25,8 +25,8 @@ public class SupplierRepository(WarehouseDbContext context) : ISupplierRepositor
         context.Suppliers.Remove(supplier);
     }
 
-    public void SaveChanges()
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
-        context.SaveChanges();
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

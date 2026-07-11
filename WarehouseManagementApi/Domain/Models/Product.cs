@@ -6,7 +6,7 @@ public class Product
 {
     [Key]
     [Required]
-    public required string Id { get; init; }
+    public required string Id { get; init; } = Guid.NewGuid().ToString();
     
     [Required(ErrorMessage = "Product name is required")]
     [StringLength(50, ErrorMessage = "Product name cannot be longer than 50 characters")]

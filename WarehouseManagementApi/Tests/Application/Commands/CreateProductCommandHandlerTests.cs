@@ -31,7 +31,7 @@ public class CreateProductCommandHandlerTests
 
         repository
             .Setup(r => r.SkuExists(It.IsAny<string>()))
-            .Returns(false);
+            .ReturnsAsync(false);
 
         repository
             .Setup(r => r.Add(It.IsAny<Product>()));

@@ -6,7 +6,7 @@ namespace Domain.Models;
 public class StockMovement
 {
     [Key]
-    public required string Id { get; set; }
+    public required string Id { get; set; } = Guid.NewGuid().ToString();
     
     [Required(ErrorMessage = "Item ID is required")]
     public required string WarehouseItemId { get; set; }

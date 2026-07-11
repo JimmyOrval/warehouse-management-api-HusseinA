@@ -6,7 +6,7 @@ public class Supplier
 {
     [Key]
     [Required]
-    public required string Id { get; init; }
+    public required string Id { get; init; } = Guid.NewGuid().ToString();
     
     [Required(ErrorMessage = "Supplier name is required")]
     [StringLength(100, ErrorMessage = "Supplier name cannot be longer than 100 characters")]

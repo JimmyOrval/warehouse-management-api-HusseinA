@@ -13,34 +13,34 @@ namespace Presentation.Controllers;
 public class SuppliersController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
-    public IActionResult GetSuppliers()
+    public async Task<IActionResult> GetSuppliers()
     {
-        return Ok(mediator.Send(new ListSuppliersQuery()));
+        return Ok(await mediator.Send(new ListSuppliersQuery()));
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetSupplier(string id)
+    public async Task<IActionResult> GetSupplier(string id)
     {
-        return Ok(mediator.Send(new GetSupplierByIdQuery(id)));
+        return Ok(await mediator.Send(new GetSupplierByIdQuery(id)));
     }
 
     [HttpPost]
-    public IActionResult CreateSupplier([FromBody] CreateSupplierCommand command)
+    public async Task<IActionResult> CreateSupplier([FromBody] CreateSupplierCommand command)
     {
-        var supplierId = mediator.Send(command);
+        var supplierId = await mediator.Send(command);
         
         return CreatedAtAction(nameof(GetSupplier), new { id = supplierId }, null);
     }
 
     [HttpDelete("{id}")]
-    public IActionResult DeleteSupplier(string id)
+    public async Task<IActionResult> DeleteSupplier(string id)
     {
-        return Ok(mediator.Send(new DeactivateSupplierCommand(id)));
+        return Ok(await mediator.Send(new DeactivateSupplierCommand(id)));
     }
     
     [HttpPost("{id}/assign-supplier/{supplierId}")]
-    public IActionResult AssignSupplier([FromRoute] string id, [FromRoute] string supplierId)
+    public async Task<IActionResult> AssignSupplier([FromRoute] string id, [FromRoute] string supplierId)
     {
-        return Ok(mediator.Send(new AssignSupplierToProductCommand(id, supplierId)));
+        return Ok(await mediator.Send(new AssignSupplierToProductCommand(id, supplierId)));
     }
 }
