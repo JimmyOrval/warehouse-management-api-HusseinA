@@ -5,7 +5,7 @@ namespace Domain.Models;
 public class ProductImage
 {
     [Required]
-    public required string Id { get; set; }
+    public required string Id { get; set; } = Guid.NewGuid().ToString();
     [Required]
     public required string ProductId { get; set; }
     public Product? Product { get; set; }

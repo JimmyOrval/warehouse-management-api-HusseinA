@@ -5,7 +5,7 @@ namespace Domain.Models;
 public class WarehouseItem
 {
     [Key]
-    public required string Id { get; set; }
+    public required string Id { get; set; } = Guid.NewGuid().ToString();
     
     [Required(ErrorMessage = "Product connection is required")]
     public required string ProductId { get; set; }

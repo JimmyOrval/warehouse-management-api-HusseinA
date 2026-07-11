@@ -12,5 +12,5 @@ public interface ISupplierRepository
     
     void Delete(Supplier supplier);
     
-    void SaveChanges();
+    Task SaveChangesAsync(CancellationToken cancellationToken);
 }

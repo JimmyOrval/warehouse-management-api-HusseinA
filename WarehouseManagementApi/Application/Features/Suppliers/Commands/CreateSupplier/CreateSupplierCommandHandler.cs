@@ -13,7 +13,7 @@ public class CreateSupplierCommandHandler(ISupplierRepository supplierRepository
         var supplier = mapper.Map<Supplier>(request);
         
         supplierRepository.Add(supplier);
-        supplierRepository.SaveChanges();
+        await supplierRepository.SaveChangesAsync(cancellationToken);
         
         return supplier.Id;
     }

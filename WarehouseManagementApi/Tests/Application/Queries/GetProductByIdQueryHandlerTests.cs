@@ -16,7 +16,7 @@ public class GetProductByIdQueryHandlerTests
 
         repository
             .Setup(r => r.GetById(It.IsAny<string>()))
-            .Returns((Product?)null);
+            .ReturnsAsync((Product?)null);
 
         var handler = new GetProductByIdQueryHandler(repository.Object, mockMapper.Object);
 

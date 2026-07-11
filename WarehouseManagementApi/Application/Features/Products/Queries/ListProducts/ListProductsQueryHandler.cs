@@ -12,7 +12,7 @@ public class ListProductsQueryHandler(IProductRepository productRepository, IMap
     {
         var products = request.OnlyAvailable == true
             ? productRepository.GetAvailable()
-            : productRepository.GetAll();
+            : await productRepository.GetAll();
 
         return mapper.Map<IEnumerable<ProductViewModel>>(products);
     }

@@ -19,7 +19,7 @@ public class DeactivateSupplierCommandHandler(ISupplierRepository supplierReposi
             throw new KeyNotFoundException("Supplier not found");
         
         supplier.IsActive = false;
-        supplierRepository.SaveChanges();
+        await supplierRepository.SaveChangesAsync(cancellationToken);
         
         return mapper.Map<SupplierViewModel>(supplier);
     }
