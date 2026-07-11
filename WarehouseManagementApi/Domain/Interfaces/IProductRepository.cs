@@ -6,11 +6,11 @@ public interface IProductRepository
 {
     IEnumerable<Product> GetAll();
     
-    IEnumerable<Product> GetAvailable();
+    IQueryable<Product> GetAvailable();
     
     Product? GetById(string id);
     
-    IEnumerable<Product> Search(string? name, string? supplier);
+    IQueryable<Product> Search(string? name, string? supplier);
     
     bool SkuExists(string sku);
     
@@ -28,13 +28,13 @@ public interface IProductRepository
     
     int GetQuantity(string productId);
     
-    IEnumerable<Product> GetProductsBySupplier(string supplierName, bool isAscending);
+    IQueryable<Product> GetProductsBySupplier(string supplierName, bool isAscending);
     
     IQueryable<IGrouping<int, Product>> GroupByExpiryYear();
-    
-    IEnumerable<Product> GroupByExpiryYearAndSupplierCountry();
+
+    public IQueryable<IGrouping<object, Product>> GroupByExpiryYearAndSupplierCountry();
 
     int GetCount();
     
-    IEnumerable<Product> GetPagedProducts(int pageNumber, int pageSize);
+    IQueryable<Product> GetPagedProducts(int pageNumber, int pageSize);
 }

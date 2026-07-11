@@ -4,11 +4,11 @@ namespace Domain.Interfaces;
 
 public interface ISupplierRepository
 {
-    IEnumerable<Supplier> GetAll();
+    IQueryable<Supplier> GetAll();
     
     Supplier? GetById(string id);
 
-    string Add(Supplier supplier);
+    void Add(Supplier supplier);
     
     void Delete(Supplier supplier);
     

@@ -8,17 +8,20 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
 {
     public IEnumerable<Product> GetAll()
     {
-        var products = context.Products.AsEnumerable();
-        return products.OrderByDescending(p => p.CreatedAt).ToList();
+        return context.Products
+            .OrderByDescending(p => p.CreatedAt)
+            .ToList();
     }
 
-    public IEnumerable<Product> GetAvailable()
+    public IQueryable<Product> GetAvailable()
     {
-        var items = context.WarehouseItems
-            .ToLookup(i => i.ProductId, i => i.QuantityInStock);
-
         return context.Products
-            .Where(p => !p.IsArchived && items[p.Id].Sum() > 0)
+            .Where(p =>
+                !p.IsArchived &&
+                context.WarehouseItems
+                    .Where(w => w.ProductId == p.Id)
+                    .Sum(w => (int?)w.QuantityInStock) > 0
+            )
             .OrderByDescending(p => p.CreatedAt);
     }
 
@@ -27,7 +30,7 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
         return context.Products.FirstOrDefault(x => x.Id == id);
     }
 
-    public IEnumerable<Product> Search(string? name, string? supplier)
+    public IQueryable<Product> Search(string? name, string? supplier)
     {
         IQueryable<Product> products = context.Products;
 
@@ -73,10 +76,11 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
         context.SaveChanges();
     }
     
-    public IEnumerable<Product> GetProductsBySupplier(string supplierName, bool isAscending)
+    public IQueryable<Product> GetProductsBySupplier(string supplierName, bool isAscending)
     {
         var products = context.Products
-            .Where(p => p.Supplier!.Name == supplierName);
+            .Where(p => p.Supplier != null &&
+                        p.Supplier.Name == supplierName);
 
         products = isAscending ? products.OrderBy(p => p.CreatedAt) : products.OrderByDescending(p => p.CreatedAt);
 
@@ -90,13 +94,14 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
         return context.Products.GroupBy(p => p.ExpiryDate.Year);
     }
 
-    public IEnumerable<Product> GroupByExpiryYearAndSupplierCountry()
+    public IQueryable<IGrouping<object, Product>> GroupByExpiryYearAndSupplierCountry()
     {
-        var products = context.Products
-            // used an anonymous object to simplify table joining
-            .GroupBy(p => new {p.ExpiryDate.Year, p.Supplier!.Country});
-        
-        return products.SelectMany(group => group).ToList();
+        return context.Products
+            .GroupBy(p => new
+            {
+                p.ExpiryDate.Year,
+                p.Supplier!.Country
+            });
     }
 
     public int GetCount()
@@ -104,13 +109,14 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
         return context.Products.Count();
     }
 
-    public IEnumerable<Product> GetPagedProducts(int pageNumber, int pageSize)
+    public IQueryable<Product> GetPagedProducts(int pageNumber, int pageSize)
     {
         return context.Products
+            .OrderBy(p => p.Id)
             // skips products according to page number and its size
             .Skip((pageNumber - 1) * pageSize)
             // then takes products as much as page can hold
-            .Take(pageSize).AsEnumerable();
+            .Take(pageSize);
     }
 
     // I will later create a separate WarehouseItem
