@@ -36,16 +36,16 @@ public class Product
     public bool IsArchived { get; set; }
     
     [Required]
-    public DateTime CreatedAt { get; init; } =  DateTime.Now;
+    public DateTime CreatedAt { get; init; } =  DateTime.UtcNow;
 
-    public DateTime LastUpdatedAt { get; set; } = DateTime.Now;
+    public DateTime LastUpdatedAt { get; set; } = DateTime.UtcNow;
 
     public void Archive()
     {
         if(IsArchived)
             throw new InvalidOperationException("Product already archived");
         IsArchived = true;
-        LastUpdatedAt = DateTime.Now;
+        LastUpdatedAt = DateTime.UtcNow;
     }
 
     public void AssignSupplier(Supplier supplier)
@@ -53,7 +53,7 @@ public class Product
         if(!supplier.IsActive)
             throw new ArgumentException("Supplier is not active");
         SupplierId = supplier.Id;
-        LastUpdatedAt = DateTime.Now;
+        LastUpdatedAt = DateTime.UtcNow;
     }
 
     public void ChangePrice(decimal newPrice)
@@ -64,6 +64,6 @@ public class Product
             throw new InvalidOperationException("Product is not available");
         
         Price = newPrice;
-        LastUpdatedAt = DateTime.Now;
+        LastUpdatedAt = DateTime.UtcNow;
     }
 }
