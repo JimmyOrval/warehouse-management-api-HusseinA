@@ -5,20 +5,19 @@ namespace Infrastructure.Repositories;
 
 public class SupplierRepository(WarehouseDbContext context) : ISupplierRepository
 {
-    public IEnumerable<Supplier> GetAll()
+    public IQueryable<Supplier> GetAll()
     {
-        return context.Suppliers.ToList();
+        return context.Suppliers;
     }
 
     public Supplier? GetById(string id)
     {
-        return context.Suppliers.FirstOrDefault(s => s.Id.Equals(id));
+        return context.Suppliers.FirstOrDefault(s => s.Id == id);
     }
 
-    public string Add(Supplier supplier)
+    public void Add(Supplier supplier)
     {
         context.Suppliers.Add(supplier);
-        return supplier.Id;
     }
 
     public void Delete(Supplier supplier)
