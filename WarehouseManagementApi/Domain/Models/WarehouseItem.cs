@@ -23,7 +23,7 @@ public class WarehouseItem
     public void StockIn(int quantity)
     {
         QuantityInStock += quantity;
-        LastStockUpdate = DateTime.Now;
+        LastStockUpdate = DateTime.UtcNow;
     }
 
     public void StockOut(int quantity)
@@ -33,6 +33,6 @@ public class WarehouseItem
         if(quantity > QuantityInStock)
             throw new InvalidOperationException("Quantity insufficient");
         QuantityInStock -= quantity;
-        LastStockUpdate = DateTime.Now;
+        LastStockUpdate = DateTime.UtcNow;
     }
 }
