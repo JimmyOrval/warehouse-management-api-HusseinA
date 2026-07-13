@@ -16,13 +16,13 @@ public class ArchiveProductCommandHandler(
         if (request.Id?.Length != 36)
             throw new ArgumentException("Invalid ID format");
 
-        var product = await productRepository.GetById(request.Id);
+        var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (product == null)
             throw new KeyNotFoundException("Product not found");
 
         product.Archive();
-        await productRepository.SaveChangesAsync();
+        await productRepository.SaveChangesAsync(cancellationToken);
         return mapper.Map<ProductViewModel>(product);
     }
 }

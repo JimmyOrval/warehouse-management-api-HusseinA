@@ -13,7 +13,7 @@ public class GetProductByIdQueryHandler(IProductRepository productRepository, IM
         if (request.Id.Length != 36)
             throw new ArgumentException("Invalid ID format");
         
-        var product = await productRepository.GetById(request.Id);
+        var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
 
         return product == null
             ? throw new KeyNotFoundException("Product not found")

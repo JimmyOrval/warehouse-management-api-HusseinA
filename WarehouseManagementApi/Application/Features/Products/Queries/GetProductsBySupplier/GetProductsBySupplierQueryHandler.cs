@@ -10,8 +10,8 @@ public class GetProductsBySupplierQueryHandler(IProductRepository productReposit
 {
     public async Task<IEnumerable<ProductViewModel>> Handle(GetProductsBySupplierQuery request, CancellationToken cancellationToken)
     {
-        var products = productRepository.GetProductsBySupplier(
-                request.SupplierName, request.IsAscending);
+        var products = await productRepository.GetProductsBySupplierAsync(
+                request.SupplierName, request.IsAscending, cancellationToken);
         
         return mapper.Map<IEnumerable<ProductViewModel>>(products);
     }

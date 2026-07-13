@@ -14,7 +14,8 @@ public class SearchProductsQueryHandler(IProductRepository productRepository, IM
         if(string.IsNullOrWhiteSpace(request.Name) && string.IsNullOrWhiteSpace(request.Supplier))
             throw new ArgumentException("Both filters empty. Please enter at least one.");
         
-        var products = productRepository.Search(request.Name, request.Supplier);
+        var products = await productRepository.SearchAsync(
+            request.Name, request.Supplier, cancellationToken);
 
         return mapper.Map<IEnumerable<ProductViewModel>>(products);
     }

@@ -11,8 +11,8 @@ public class ListProductsQueryHandler(IProductRepository productRepository, IMap
     public async Task<IEnumerable<ProductViewModel>> Handle(ListProductsQuery request, CancellationToken cancellationToken)
     {
         var products = request.OnlyAvailable == true
-            ? productRepository.GetAvailable()
-            : await productRepository.GetAll();
+            ? await productRepository.GetAvailableAsync(cancellationToken)
+            : await productRepository.GetAllAsync(cancellationToken);
 
         return mapper.Map<IEnumerable<ProductViewModel>>(products);
     }

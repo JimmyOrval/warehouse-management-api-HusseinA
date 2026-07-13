@@ -17,7 +17,7 @@ public class Product
     public required string Sku { get; init; }
     
     [MaxLength(1000, ErrorMessage = "Description cannot be longer than 1000 characters")]
-    public required string Description { get; set; }
+    public required string Description { get; init; }
     
     [Required(ErrorMessage = "Price is required")]
     [Range(0.1, double.MaxValue, ErrorMessage =  "Price cannot be negative")]
@@ -28,10 +28,10 @@ public class Product
     [MaxLength(36, ErrorMessage = "Supplier ID cannot be longer than 36 characters")]
     public required string SupplierId { get; set; }
     
-    public Supplier? Supplier { get; set; }
+    public virtual Supplier? Supplier { get; init; }
     
     [Required(ErrorMessage = "Expiry date is required")]
-    public DateTime ExpiryDate { get; set; }
+    public DateTime ExpiryDate { get; init; }
     
     public bool IsArchived { get; set; }
     

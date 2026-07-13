@@ -4,9 +4,9 @@ namespace Domain.Interfaces;
 
 public interface ISupplierRepository
 {
-    IQueryable<Supplier> GetAll();
+    Task<List<Supplier>> GetAllAsync(CancellationToken cancellationToken);
     
-    Supplier? GetById(string id);
+    Task<Supplier?> GetByIdAsync(string id, CancellationToken cancellationToken);
 
     void Add(Supplier supplier);
     

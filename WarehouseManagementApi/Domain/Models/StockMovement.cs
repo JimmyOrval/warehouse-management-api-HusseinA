@@ -6,19 +6,19 @@ namespace Domain.Models;
 public class StockMovement
 {
     [Key]
-    public required string Id { get; set; } = Guid.NewGuid().ToString();
+    public required string Id { get; init; } = Guid.NewGuid().ToString();
     
     [Required(ErrorMessage = "Item ID is required")]
-    public required string WarehouseItemId { get; set; }
-    public WarehouseItem? WarehouseItem { get; set; }
+    public required string WarehouseItemId { get; init; }
+    public virtual WarehouseItem? WarehouseItem { get; init; }
     
     [Required(ErrorMessage = "Movement date is required")]
-    public DateTime MovementDate { get; set; }
+    public DateTime MovementDate { get; init; }
     
     [Required(ErrorMessage = "Quantity is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Quantity cannot be negative")]
-    public int Quantity { get; set; }
+    public int Quantity { get; init; }
     
     [Required]
-    public StockMovementType MovementType { get; set; }
+    public StockMovementType MovementType { get; init; }
 }

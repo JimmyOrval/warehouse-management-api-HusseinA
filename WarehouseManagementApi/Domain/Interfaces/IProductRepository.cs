@@ -4,31 +4,32 @@ namespace Domain.Interfaces;
 
 public interface IProductRepository
 {
-    Task<IEnumerable<Product>> GetAll();
+    Task<List<Product>> GetAllAsync(CancellationToken cancellationToken);
     
-    IQueryable<Product> GetAvailable();
+    Task<List<Product>> GetAvailableAsync(CancellationToken cancellationToken);
     
-    Task<Product?> GetById(string id);
+    Task<Product?> GetByIdAsync(string id, CancellationToken cancellationToken);
     
-    IQueryable<Product> Search(string? name, string? supplier);
+    Task<List<Product>> SearchAsync(string? name, string? supplier, CancellationToken cancellationToken);
     
-    Task<bool> SkuExists(string sku);
+    Task<bool> SkuExistsAsync(string sku, CancellationToken cancellationToken);
     
     void Add(Product product);
     
     void Delete(Product product);
 
-    Task SaveChangesAsync();
+    Task SaveChangesAsync(CancellationToken cancellationToken);
     
-    IQueryable<Product> GetProductsBySupplier(string supplierName, bool isAscending);
+    Task<List<Product>> GetProductsBySupplierAsync(string supplierName, bool isAscending, CancellationToken cancellationToken);
     
-    IQueryable<IGrouping<int, Product>> GroupByExpiryYear();
+    Task<List<IGrouping<int, Product>>> GroupByExpiryYearAsync(CancellationToken cancellationToken);
 
-    IQueryable<IGrouping<object, Product>> GroupByExpiryYearAndSupplierCountry();
+    public record ExpiryYearCountry(int Year, string Country);
+    Task<List<IGrouping<ExpiryYearCountry, Product>>> GroupByExpiryYearAndSupplierCountryAsync(CancellationToken cancellationToken);
 
-    Task<int> GetCount();
+    Task<int> GetCountAsync(CancellationToken cancellationToken);
     
-    IQueryable<Product> GetPagedProducts(int pageNumber, int pageSize);
+    Task<List<Product>> GetPagedProductsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken);
     
     WarehouseItem? GetWarehouseItem(string productId, string location);
                                                                                  

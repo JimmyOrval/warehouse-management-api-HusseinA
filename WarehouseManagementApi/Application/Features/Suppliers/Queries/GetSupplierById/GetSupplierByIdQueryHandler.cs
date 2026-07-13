@@ -13,11 +13,10 @@ public class GetSupplierByIdQueryHandler(ISupplierRepository supplierRepository,
         if (request.Id.Length != 36)
             throw new ArgumentException("Invalid ID format");
         
-        var supplier = supplierRepository.GetById(request.Id);
+        var supplier = await supplierRepository.GetByIdAsync(request.Id, cancellationToken);
         
-        if(supplier == null)
-            throw new KeyNotFoundException("Supplier not found");
-        
-        return mapper.Map<SupplierViewModel>(supplier);
+        return supplier == null
+            ? throw new KeyNotFoundException("Supplier not found")
+            : mapper.Map<SupplierViewModel>(supplier);
     }
 }

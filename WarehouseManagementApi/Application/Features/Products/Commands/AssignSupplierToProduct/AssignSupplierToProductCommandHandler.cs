@@ -13,7 +13,7 @@ public class AssignSupplierToProductCommandHandler(
 {
     public async Task<ProductViewModel> Handle(AssignSupplierToProductCommand request, CancellationToken cancellationToken)
     {
-        var product = await productRepository.GetById(request.Id);
+        var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
         
         if(product == null)
             throw new KeyNotFoundException("Product not found");
@@ -21,13 +21,13 @@ public class AssignSupplierToProductCommandHandler(
         if(product.IsArchived)
             throw new ArgumentException("Product is unavailable");
 
-        var supplier = supplierRepository.GetById(request.SupplierId);
+        var supplier = await supplierRepository.GetByIdAsync(request.SupplierId, cancellationToken);
 
         if (supplier == null)
             throw new KeyNotFoundException("Supplier not found");
         
         product.AssignSupplier(supplier);
-        await productRepository.SaveChangesAsync();
+        await productRepository.SaveChangesAsync(cancellationToken);
         
         return mapper.Map<ProductViewModel>(product);
     }

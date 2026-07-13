@@ -14,7 +14,7 @@ public class UpdateProductPriceCommandHandler(IProductRepository productReposito
         if (request.Id?.Length != 36)
             throw new ArgumentException("Invalid ID format");
 
-        var product = await productRepository.GetById(request.Id);
+        var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
         
         if (product == null)
             throw new KeyNotFoundException("Product not found");
@@ -30,7 +30,7 @@ public class UpdateProductPriceCommandHandler(IProductRepository productReposito
         Console.WriteLine("Old price: " + oldPrice + ", Old LastUpdatedAt: " + oldLastUpdatedAt +
                           ", New Price: " + product.Price + ", New LastUpdatedAt: " + product.LastUpdatedAt);
         
-        await productRepository.SaveChangesAsync();
+        await productRepository.SaveChangesAsync(cancellationToken);
         return mapper.Map<ProductViewModel>(product);
     }
 }

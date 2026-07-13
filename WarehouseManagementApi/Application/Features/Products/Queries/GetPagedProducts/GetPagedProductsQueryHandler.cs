@@ -10,8 +10,8 @@ public class GetPagedProductsQueryHandler(IProductRepository productRepository, 
 {
     public async Task<IEnumerable<ProductViewModel>> Handle(GetPagedProductsQuery request, CancellationToken cancellationToken)
     {
-        var pagedProducts = productRepository.GetPagedProducts(
-                request.PageNumber, request.PageSize);
+        var pagedProducts = await productRepository.GetPagedProductsAsync(
+                request.PageNumber, request.PageSize, cancellationToken);
         
         return mapper.Map<IEnumerable<ProductViewModel>>(pagedProducts);
     }
