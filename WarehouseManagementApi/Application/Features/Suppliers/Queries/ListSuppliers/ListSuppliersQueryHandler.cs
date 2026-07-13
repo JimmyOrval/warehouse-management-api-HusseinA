@@ -10,7 +10,7 @@ public class ListSuppliersQueryHandler(ISupplierRepository supplierRepository, I
 {
     public async Task<IEnumerable<SupplierViewModel>> Handle(ListSuppliersQuery request, CancellationToken cancellationToken)
     {
-        var suppliers = supplierRepository.GetAll();
+        var suppliers = await supplierRepository.GetAllAsync(cancellationToken);
         
         return mapper.Map<IEnumerable<SupplierViewModel>>(suppliers);
     }

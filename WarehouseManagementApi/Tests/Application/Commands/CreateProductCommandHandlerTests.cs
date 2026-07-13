@@ -30,7 +30,7 @@ public class CreateProductCommandHandlerTests
             });
 
         repository
-            .Setup(r => r.SkuExists(It.IsAny<string>()))
+            .Setup(r => r.SkuExistsAsync(It.IsAny<string>(), CancellationToken.None))
             .ReturnsAsync(false);
 
         repository

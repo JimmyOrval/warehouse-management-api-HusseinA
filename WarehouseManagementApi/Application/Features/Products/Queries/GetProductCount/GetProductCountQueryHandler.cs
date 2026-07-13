@@ -8,6 +8,6 @@ public class GetProductCountQueryHandler(IProductRepository productRepository)
 {
     public async Task<int> Handle(GetProductCountQuery request, CancellationToken cancellationToken)
     {
-        return await productRepository.GetCount();
+        return await productRepository.GetCountAsync(cancellationToken);
     }
 }

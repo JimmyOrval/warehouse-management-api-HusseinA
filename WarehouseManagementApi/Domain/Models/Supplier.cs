@@ -14,17 +14,22 @@ public class Supplier
     
     [Required(ErrorMessage = "Country is required")]
     [StringLength(57, ErrorMessage = "Country cannot be longer than 57 characters")]
-    public string Country { get; set; } = string.Empty;
+    public string Country { get; init; } = string.Empty;
     
     [Required(ErrorMessage = "Email address is required")]
     [EmailAddress(ErrorMessage = "Email address is not a valid email address")]
     [StringLength(255, ErrorMessage = "Email address cannot be longer than 255 characters")]
-    public string ContactEmail { get; set; } = string.Empty;
+    public string ContactEmail { get; init; } = string.Empty;
     
     [Required(ErrorMessage = "Phone number is required")]
     [Phone]
     [StringLength(20, ErrorMessage = "Phone number cannot be longer than 20 characters")]
-    public string Phone { get; set; } = string.Empty;
+    public string Phone { get; init; } = string.Empty;
     
     public bool IsActive { get; set; } = true;
+
+    public void Deactivate()
+    {
+        IsActive = false;
+    }
 }

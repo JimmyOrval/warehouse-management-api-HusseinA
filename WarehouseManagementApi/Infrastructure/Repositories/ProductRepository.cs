@@ -6,17 +6,17 @@ namespace Infrastructure.Repositories;
 
 public class ProductRepository(WarehouseDbContext context) : IProductRepository
 {
-    public async Task<IEnumerable<Product>> GetAll()
+    public async Task<List<Product>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await context.Products
             .Include(p => p.Supplier)
             .OrderByDescending(p => p.CreatedAt)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public IQueryable<Product> GetAvailable()
+    public async Task<List<Product>> GetAvailableAsync(CancellationToken cancellationToken = default)
     {
-        return context.Products
+        return await context.Products
             .Include(p => p.Supplier)
             .Where(p =>
                 !p.IsArchived &&
@@ -24,36 +24,37 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
                     .Where(w => w.ProductId == p.Id)
                     .Sum(w => (int?)w.QuantityInStock) > 0
             )
-            .OrderByDescending(p => p.CreatedAt);
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<Product?> GetById(string id)
+    public async Task<Product?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         return await context.Products
             .Include(p => p.Supplier)
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
-    public IQueryable<Product> Search(string? name, string? supplier)
+    public async Task<List<Product>> SearchAsync(
+        string? name, string? supplier,
+        CancellationToken cancellationToken = default)
     {
-        IQueryable<Product> products = context.Products;
+        IQueryable<Product> products = context.Products.Include(p => p.Supplier);
 
         // if name filter available, filter according to name
         if(!string.IsNullOrWhiteSpace(name))
         {
             products = products
-                .Include(p => p.Supplier)
-                .Where(p =>
-                // ILike ignores case, since EFCore can't
-                // translate OrdinalIgnoreCase into SQL
-                EF.Functions.ILike(p.Name, $"{name}%"));
+                .Where(p => 
+                    EF.Functions.ILike(
+                        p.Name,
+                        $"{name}%"));
         }
 
         // if name filter available, filter according to supplier
         if(!string.IsNullOrWhiteSpace(supplier))
         {
             products = products
-                .Include(p => p.Supplier)
                 .Where(p => 
                 context.Suppliers.Any(s => 
                     s.Id == p.SupplierId &&
@@ -61,12 +62,13 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
                 )
             );
         }
-        return products;
+        return await products.ToListAsync(cancellationToken);
     }
 
-    public async Task<bool> SkuExists(string sku)
+    public async Task<bool> SkuExistsAsync(string sku,
+        CancellationToken cancellationToken = default)
     {
-        return await context.Products.AnyAsync(p => p.Sku == sku);
+        return await context.Products.AnyAsync(p => p.Sku == sku, cancellationToken);
     }
 
     public void Add(Product product)
@@ -79,12 +81,12 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
         context.Products.Remove(product);
     }
 
-    public async Task SaveChangesAsync()
+    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(cancellationToken);
     }
     
-    public IQueryable<Product> GetProductsBySupplier(string supplierName, bool isAscending)
+    public async Task<List<Product>> GetProductsBySupplierAsync(string supplierName, bool isAscending, CancellationToken cancellationToken = default)
     {
         var products = context.Products
             .Include(p => p.Supplier)
@@ -93,37 +95,44 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
 
         products = isAscending ? products.OrderBy(p => p.CreatedAt) : products.OrderByDescending(p => p.CreatedAt);
 
-        return products;
+        return await products.ToListAsync(cancellationToken);
     }
     
-    public IQueryable<IGrouping<int, Product>> GroupByExpiryYear()
+    public async Task<List<IGrouping<int, Product>>> GroupByExpiryYearAsync(
+        CancellationToken cancellationToken = default)
     {
-        return context.Products
+        return await context.Products
             .Include(p => p.Supplier)
-            .GroupBy(p => p.ExpiryDate.Year);
+            .GroupBy(p => p.ExpiryDate.Year)
+            .ToListAsync(cancellationToken);
     }
-
-    public IQueryable<IGrouping<object, Product>> GroupByExpiryYearAndSupplierCountry()
+    
+    public async Task<List<IGrouping<IProductRepository.ExpiryYearCountry, Product>>>
+        GroupByExpiryYearAndSupplierCountryAsync(CancellationToken cancellationToken)
     {
-        return context.Products
+        return await context.Products
             .Include(p => p.Supplier)
-            .GroupBy(p => new { Year = p.ExpiryDate.Year, Country = p.Supplier!.Country });
+            .GroupBy(p => new IProductRepository.ExpiryYearCountry
+                (p.ExpiryDate.Year, p.Supplier!.Country ))
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<int> GetCount()
+    public async Task<int> GetCountAsync(CancellationToken cancellationToken = default)
     {
-        return await context.Products.CountAsync();
+        return await context.Products.CountAsync(cancellationToken);
     }
 
-    public IQueryable<Product> GetPagedProducts(int pageNumber, int pageSize)
+    public async Task<List<Product>> GetPagedProductsAsync(
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
     {
-        return context.Products
+        return await context.Products
             .Include(p => p.Supplier)
             .OrderBy(p => p.Id)
             // skips products according to page number and its size
             .Skip((pageNumber - 1) * pageSize)
             // then takes products as much as page can hold
-            .Take(pageSize);
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
     }
 
     // I will later create a separate WarehouseItem

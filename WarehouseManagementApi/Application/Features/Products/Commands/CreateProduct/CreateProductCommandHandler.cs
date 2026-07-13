@@ -11,7 +11,7 @@ public class CreateProductCommandHandler(IProductRepository productRepository, I
     public async Task<string> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
         // check if duplicate SKU already exists
-        if (await productRepository.SkuExists(request.Sku))
+        if (await productRepository.SkuExistsAsync(request.Sku, cancellationToken))
         {
             throw new Exception($"Product SKU already exists");
         }
@@ -19,7 +19,7 @@ public class CreateProductCommandHandler(IProductRepository productRepository, I
         var product = mapper.Map<Product>(request);
         
         productRepository.Add(product);
-        await productRepository.SaveChangesAsync();
+        await productRepository.SaveChangesAsync(cancellationToken);
         
         return product.Id;
     }

@@ -5,14 +5,14 @@ namespace Domain.Models;
 public class WarehouseItem
 {
     [Key]
-    public required string Id { get; set; } = Guid.NewGuid().ToString();
+    public required string Id { get; init; } = Guid.NewGuid().ToString();
     
     [Required(ErrorMessage = "Product connection is required")]
-    public required string ProductId { get; set; }
-    public Product? Product { get; set; }
+    public required string ProductId { get; init; }
+    public virtual Product? Product { get; init; }
     
     [Required(ErrorMessage = "Item location is required")]
-    public string Location { get; set; } = string.Empty;
+    public string Location { get; init; } = string.Empty;
     
     [Required(ErrorMessage = "Quantity is required")]
     [Range(0, int.MaxValue, ErrorMessage = "Quantity cannot be negative")]

@@ -12,8 +12,7 @@ public class GroupByExpiryYearAndSupplierCountryQueryHandler(IProductRepository 
     public async Task<IEnumerable<ProductViewModel>> Handle(GroupByExpiryYearAndSupplierCountryQuery request, CancellationToken cancellationToken)
     {
         var products = (await productRepository
-                .GroupByExpiryYearAndSupplierCountry()
-                .ToListAsync(cancellationToken))
+                .GroupByExpiryYearAndSupplierCountryAsync(cancellationToken))
             .SelectMany(g => g);
 
         return mapper.Map<IEnumerable<ProductViewModel>>(products);

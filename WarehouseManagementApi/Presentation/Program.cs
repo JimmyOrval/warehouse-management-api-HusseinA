@@ -23,7 +23,7 @@ builder.Services.AddMediatR(cfg =>
 
 builder.Services.AddDbContext<WarehouseDbContext>(options =>
     options.UseNpgsql(
-        "Host=localhost;Port=6543;Database=WarehouseDb;Username=username;Password=password",
+        builder.Configuration.GetConnectionString("DefaultConnection"),
         // to tell migrations to save in infrastructure project
         b => b.MigrationsAssembly("Infrastructure")
     ));

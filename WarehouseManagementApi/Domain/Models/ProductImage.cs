@@ -5,12 +5,12 @@ namespace Domain.Models;
 public class ProductImage
 {
     [Required]
-    public required string Id { get; set; } = Guid.NewGuid().ToString();
+    public required string Id { get; init; } = Guid.NewGuid().ToString();
     [Required]
-    public required string ProductId { get; set; }
-    public Product? Product { get; set; }
+    public required string ProductId { get; init; }
+    public virtual Product? Product { get; init; }
     [Required]
-    public required string FileName { get; set; }
+    public required string FileName { get; init; }
     [Required]
-    public required string FilePath { get; set; }
+    public required string FilePath { get; init; }
 }
