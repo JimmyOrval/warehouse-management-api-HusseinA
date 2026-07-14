@@ -1,5 +1,6 @@
 ﻿using Application.ViewModels;
 using AutoMapper;
+using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 
@@ -16,7 +17,7 @@ public class DeactivateSupplierCommandHandler(ISupplierRepository supplierReposi
         var supplier = await supplierRepository.GetByIdAsync(request.Id, cancellationToken);
         
         if(supplier == null)
-            throw new KeyNotFoundException("Supplier not found");
+            throw new NotFoundException($"Supplier '{request.Id}' not found");
         
         supplier.Deactivate();
         await supplierRepository.SaveChangesAsync(cancellationToken);

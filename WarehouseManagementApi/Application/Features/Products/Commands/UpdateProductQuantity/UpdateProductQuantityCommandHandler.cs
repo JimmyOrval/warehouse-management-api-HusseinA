@@ -1,5 +1,6 @@
 ﻿using Application.ViewModels;
 using AutoMapper;
+using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 
@@ -21,11 +22,11 @@ public class UpdateProductQuantityCommandHandler(IProductRepository productRepos
         var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (product == null)
-            throw new KeyNotFoundException("Product not found");
+            throw new NotFoundException($"Product '{request.Id}' not found");
 
         var item = productRepository.GetWarehouseItem(request.Id, request.Location);
         if (item == null)
-            throw new KeyNotFoundException($"No warehouse item found in '{request.Location}'");
+            throw new NotFoundException($"No warehouse item found in '{request.Location}'");
         
         // update both the quantity and updated date
         item.QuantityInStock = request.Quantity;

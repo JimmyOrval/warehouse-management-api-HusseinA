@@ -1,5 +1,6 @@
 ﻿using Application.ViewModels;
 using AutoMapper;
+using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 
@@ -19,7 +20,7 @@ public class ArchiveProductCommandHandler(
         var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (product == null)
-            throw new KeyNotFoundException("Product not found");
+            throw new NotFoundException($"Product '{request.Id}' not found");
 
         product.Archive();
         await productRepository.SaveChangesAsync(cancellationToken);

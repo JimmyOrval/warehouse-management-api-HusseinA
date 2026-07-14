@@ -1,5 +1,6 @@
 ﻿using Application.ViewModels;
 using AutoMapper;
+using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 
@@ -16,7 +17,7 @@ public class GetProductByIdQueryHandler(IProductRepository productRepository, IM
         var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
 
         return product == null
-            ? throw new KeyNotFoundException("Product not found")
+            ? throw new NotFoundException($"Product '{request.Id}' not found")
             : mapper.Map<ProductViewModel>(product);
     }
 }
