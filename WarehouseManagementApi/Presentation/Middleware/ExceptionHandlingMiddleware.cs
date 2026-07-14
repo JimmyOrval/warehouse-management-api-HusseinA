@@ -36,6 +36,11 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
                     ErrorCodes.BusinessRule,
                     exception.Message),
             
+            RequestValidationException =>
+                (StatusCodes.Status400BadRequest,
+                    ErrorCodes.Validation,
+                    exception.Message),
+            
             _ => (StatusCodes.Status500InternalServerError,
                     ErrorCodes.Internal,
                     exception.Message)

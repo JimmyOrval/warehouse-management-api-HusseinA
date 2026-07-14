@@ -11,9 +11,6 @@ public class GetSupplierByIdQueryHandler(ISupplierRepository supplierRepository,
 {
     public async Task<SupplierViewModel> Handle(GetSupplierByIdQuery request, CancellationToken cancellationToken)
     {
-        if (request.Id.Length != 36)
-            throw new ArgumentException("Invalid ID format");
-        
         var supplier = await supplierRepository.GetByIdAsync(request.Id, cancellationToken);
         
         return supplier == null

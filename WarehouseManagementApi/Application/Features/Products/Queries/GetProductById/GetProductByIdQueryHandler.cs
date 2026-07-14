@@ -11,9 +11,6 @@ public class GetProductByIdQueryHandler(IProductRepository productRepository, IM
 {
     public async Task<ProductViewModel?> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
     {
-        if (request.Id.Length != 36)
-            throw new ArgumentException("Invalid ID format");
-        
         var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
 
         return product == null

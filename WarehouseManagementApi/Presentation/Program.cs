@@ -1,6 +1,7 @@
 using Application.Features.Products.Commands.CreateProduct;
 using Application.Features.Suppliers.Commands.CreateSupplier;
 using Application.Mappings;
+using Application.Validation;
 using Domain.Interfaces;
 using Infrastructure;
 using Infrastructure.Repositories;
@@ -42,6 +43,7 @@ builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(CreateProductCommand).Assembly);
     cfg.RegisterServicesFromAssembly(typeof(CreateSupplierCommand).Assembly);
+    cfg.AddOpenBehavior(typeof(DataAnnotationValidationBehavior<,>));
 });
 
 builder.Services.AddDbContext<WarehouseDbContext>(options =>

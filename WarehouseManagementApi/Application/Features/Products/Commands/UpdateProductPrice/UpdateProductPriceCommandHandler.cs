@@ -11,10 +11,6 @@ public class UpdateProductPriceCommandHandler(IProductRepository productReposito
 {
     public async Task<ProductViewModel> Handle(UpdateProductPriceCommand request, CancellationToken cancellationToken)
     {
-        // ID should match GUID format
-        if (request.Id?.Length != 36)
-            throw new ArgumentException("Invalid ID format");
-
         var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
         
         if (product == null)

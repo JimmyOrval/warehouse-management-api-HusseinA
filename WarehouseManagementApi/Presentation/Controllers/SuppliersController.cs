@@ -14,35 +14,46 @@ namespace Presentation.Controllers;
 public class SuppliersController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetSuppliers()
+    public async Task<IActionResult> GetSuppliers(
+        CancellationToken cancellationToken = default)
     {
-        return Ok(await mediator.Send(new ListSuppliersQuery()));
+        return Ok(await mediator.Send(new ListSuppliersQuery(),
+            cancellationToken));
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetSupplier(string id)
+    public async Task<IActionResult> GetSupplier(string id,
+        CancellationToken cancellationToken = default)
     {
-        return Ok(await mediator.Send(new GetSupplierByIdQuery(id)));
+        return Ok(await mediator.Send(new GetSupplierByIdQuery(id),
+            cancellationToken));
     }
 
     [ServiceFilter(typeof(ModelValidationFilter))]
     [HttpPost]
-    public async Task<IActionResult> CreateSupplier([FromBody] CreateSupplierCommand command)
+    public async Task<IActionResult> CreateSupplier([FromBody] CreateSupplierCommand command,
+        CancellationToken cancellationToken = default)
     {
-        var supplierId = await mediator.Send(command);
+        var supplierId = await mediator.Send(command, cancellationToken);
         
         return CreatedAtAction(nameof(GetSupplier), new { id = supplierId }, null);
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteSupplier(string id)
+    public async Task<IActionResult> DeleteSupplier(string id,
+        CancellationToken cancellationToken = default)
     {
-        return Ok(await mediator.Send(new DeactivateSupplierCommand(id)));
+        return Ok(await mediator.Send(new DeactivateSupplierCommand(id),
+            cancellationToken));
     }
     
     [HttpPost("{id}/assign-supplier/{supplierId}")]
-    public async Task<IActionResult> AssignSupplier([FromRoute] string id, [FromRoute] string supplierId)
+    public async Task<IActionResult> AssignSupplier(
+        [FromRoute] string id,
+        [FromRoute] string supplierId,
+        CancellationToken cancellationToken = default)
     {
-        return Ok(await mediator.Send(new AssignSupplierToProductCommand(id, supplierId)));
+        return Ok(await mediator.Send(new AssignSupplierToProductCommand(id, supplierId),
+            cancellationToken));
     }
 }

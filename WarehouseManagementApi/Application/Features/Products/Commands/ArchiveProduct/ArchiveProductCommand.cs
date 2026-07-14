@@ -1,6 +1,10 @@
-﻿using Application.ViewModels;
+﻿using Application.Validation;
+using Application.ViewModels;
 using MediatR;
 
 namespace Application.Features.Products.Commands.ArchiveProduct;
 
-public record ArchiveProductCommand(string Id) : IRequest<ProductViewModel>;
+public record ArchiveProductCommand(
+    [property: GuidString]
+    string Id)
+    : IRequest<ProductViewModel>;

@@ -25,6 +25,12 @@ public class SupplierRepository(WarehouseDbContext context) : ISupplierRepositor
     {
         context.Suppliers.Remove(supplier);
     }
+    
+    public async Task<int> GetCountAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await context.Suppliers.CountAsync(cancellationToken);
+    }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
