@@ -5,6 +5,7 @@ using Application.Features.Suppliers.Queries.GetSupplierById;
 using Application.Features.Suppliers.Queries.ListSuppliers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Filters;
 
 namespace Presentation.Controllers;
 
@@ -24,6 +25,7 @@ public class SuppliersController(IMediator mediator) : ControllerBase
         return Ok(await mediator.Send(new GetSupplierByIdQuery(id)));
     }
 
+    [ServiceFilter(typeof(ModelValidationFilter))]
     [HttpPost]
     public async Task<IActionResult> CreateSupplier([FromBody] CreateSupplierCommand command)
     {

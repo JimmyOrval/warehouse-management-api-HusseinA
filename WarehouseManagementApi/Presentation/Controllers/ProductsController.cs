@@ -11,9 +11,9 @@ using Application.Features.Products.Queries.GroupByExpiryYear;
 using Application.Features.Products.Queries.GroupByExpiryYearAndSupplierCountry;
 using Application.Features.Products.Queries.ListProducts;
 using Application.Features.Products.Queries.SearchProducts;
-using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Filters;
 
 namespace Presentation.Controllers;
 
@@ -40,6 +40,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
         return Ok(await mediator.Send(new SearchProductsQuery(name, supplier)));
     }
 
+    [ServiceFilter(typeof(ModelValidationFilter))]
     [HttpPost]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command)
     {

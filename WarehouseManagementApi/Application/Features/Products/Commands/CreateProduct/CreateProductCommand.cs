@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Application.Features.Products.Commands.CreateProduct;
 
-public record CreateProductCommand : IRequest<string>
+public record CreateProductCommand : IRequest<string>, IValidatableObject
 {
     [Required(ErrorMessage = "Product name is required")]
     [StringLength(50, ErrorMessage = "Product name cannot be longer than 50 characters")]
@@ -27,4 +27,13 @@ public record CreateProductCommand : IRequest<string>
     
     [Required(ErrorMessage = "Expiry date is required")]
     public DateTime ExpiryDate { get; init; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (ExpiryDate <= DateTime.UtcNow)
+        {
+            yield return new ValidationResult("Expiry date must be in the future",
+                [nameof(ExpiryDate)]);
+        }
+    }
 }
