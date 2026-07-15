@@ -1,5 +1,6 @@
 ﻿using Application.Features.Products.Queries.GetProductById;
 using AutoMapper;
+using Domain.Exceptions;
 using Domain.Interfaces;
 using Domain.Models;
 using Moq;
@@ -22,7 +23,7 @@ public class GetProductByIdQueryHandlerTests
 
         var query = new GetProductByIdQuery(Guid.NewGuid().ToString());
 
-        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+        await Assert.ThrowsAsync<NotFoundException>(() =>
             handler.Handle(query, CancellationToken.None));
     }
 }
