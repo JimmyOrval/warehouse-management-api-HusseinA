@@ -17,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ActionLoggingFilter>();
+    options.Filters.AddService<ModelValidationFilter>();
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -38,6 +39,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<ActionLoggingFilter>();
+builder.Services.AddScoped<ModelValidationFilter>();
 
 builder.Services.AddMediatR(cfg =>
 {
