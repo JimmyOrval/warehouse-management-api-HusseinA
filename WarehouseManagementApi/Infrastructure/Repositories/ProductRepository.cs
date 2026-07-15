@@ -121,6 +121,15 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
     {
         return await context.Products.CountAsync(cancellationToken);
     }
+    
+    public async Task<int> GetArchivedCountAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await context.Products
+            .CountAsync(
+                p => p.IsArchived,
+                cancellationToken);
+    }
 
     public async Task<List<Product>> GetPagedProductsAsync(
         int pageNumber, int pageSize, CancellationToken cancellationToken)

@@ -20,16 +20,23 @@ public interface IProductRepository
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
     
-    Task<List<Product>> GetProductsBySupplierAsync(string supplierName, bool isAscending, CancellationToken cancellationToken);
+    Task<List<Product>> GetProductsBySupplierAsync(
+        string supplierName, bool isAscending, CancellationToken cancellationToken);
     
-    Task<List<IGrouping<int, Product>>> GroupByExpiryYearAsync(CancellationToken cancellationToken);
+    Task<List<IGrouping<int, Product>>> GroupByExpiryYearAsync(
+        CancellationToken cancellationToken);
 
     public record ExpiryYearCountry(int Year, string Country);
-    Task<List<IGrouping<ExpiryYearCountry, Product>>> GroupByExpiryYearAndSupplierCountryAsync(CancellationToken cancellationToken);
+    Task<List<IGrouping<ExpiryYearCountry, Product>>>
+        GroupByExpiryYearAndSupplierCountryAsync(CancellationToken cancellationToken);
 
     Task<int> GetCountAsync(CancellationToken cancellationToken);
     
-    Task<List<Product>> GetPagedProductsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken);
+    Task<int> GetArchivedCountAsync(
+        CancellationToken cancellationToken = default);
+    
+    Task<List<Product>> GetPagedProductsAsync(
+        int pageNumber, int pageSize, CancellationToken cancellationToken);
     
     WarehouseItem? GetWarehouseItem(string productId, string location);
                                                                                  

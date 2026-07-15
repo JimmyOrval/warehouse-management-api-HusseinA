@@ -38,13 +38,15 @@ public class CreateProductCommandHandlerTests
 
         var handler = new CreateProductCommandHandler(repository.Object, mockMapper.Object);
 
-        var command = new CreateProductCommand(
-            "Laptop",
-            "SKU1",
-            "HP",
-            1000,
-            Guid.NewGuid().ToString(),
-            DateTime.Now.AddMonths(6));
+        var command = new CreateProductCommand
+        {
+            Name = "Laptop",
+            Sku = "SKU1",
+            Description = "HP",
+            Price = 1000,
+            SupplierId = Guid.NewGuid().ToString(),
+            ExpiryDate = DateTime.UtcNow.AddMonths(6)
+        };
 
         await handler.Handle(command, CancellationToken.None);
 

@@ -11,6 +11,11 @@ public class DataAnnotationValidationBehavior<TRequest, TResponse>
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken = default)
     {
+        if (typeof(TRequest).GetProperties().Length == 0)
+        {
+            return await next(cancellationToken);
+        }
+        
         var context = new ValidationContext(request, serviceProvider: null, items: null);
         var validationResults = new List<ValidationResult>();
 
