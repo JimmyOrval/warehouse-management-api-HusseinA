@@ -4,10 +4,14 @@ using Domain.Exceptions;
 using Domain.Interfaces;
 using Domain.Models;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Products.Commands.UploadProductImage;
 
-public class UploadProductImageCommandHandler(IProductRepository productRepository, IMapper mapper)
+public class UploadProductImageCommandHandler(
+    IProductRepository productRepository,
+    IMapper mapper,
+    ILogger<UploadProductImageCommandHandler> logger)
     : IRequestHandler<UploadProductImageCommand, ProductImageViewModel>
 {
     public async Task<ProductImageViewModel> Handle(UploadProductImageCommand request, CancellationToken cancellationToken)
@@ -16,18 +20,29 @@ public class UploadProductImageCommandHandler(IProductRepository productReposito
         var product = await productRepository.GetByIdAsync(request.ProductId, cancellationToken);
         
         if (product == null)
+        {
+            logger.LogWarning("Image upload failed: product {ProductId} not found", request.ProductId);
             throw new NotFoundException($"Product '{request.ProductId}' not found");
+        }
         
         // if file is invalid
         if(request.ImageLength == 0)
-            throw new ArgumentException("No image was provided");
+        {
+            logger.LogWarning("Image upload failed: no image was provided");
+            throw new BusinessRuleException("No image was provided");
+        }
         
         // set image size limit
         const long maxFileSize = 2 * 1024 * 1024;
         
         // check if image size exceeds the limit
         if (request.ImageLength > maxFileSize)
-            throw new ArgumentException("Image size cannot exceed 2MB");
+        {
+            logger.LogWarning(
+                "Image upload failed: image size {ImageSize} cannot exceed 2MB",
+                request.ImageLength);
+            throw new BusinessRuleException("Image size cannot exceed 2MB");
+        }
         
         // get the image's extension
         var extension = Path.GetExtension(request.FileName).ToLower();
@@ -35,7 +50,10 @@ public class UploadProductImageCommandHandler(IProductRepository productReposito
         // check if extension is valid
         if (!extension.Contains("png") && !extension.Contains("jpg"))
         {
-            throw new ArgumentException("Image extension invalid. Use only .jpg or .png");
+            logger.LogWarning("Image upload failed: file extension {FileExtension} not supported."
+                              + "Use only .jpg or .png", 
+                extension);
+            throw new BusinessRuleException("Image extension invalid. Use only .jpg or .png");
         }
         
         // set upload directory
@@ -63,6 +81,8 @@ public class UploadProductImageCommandHandler(IProductRepository productReposito
         await using var fileStream = new FileStream(filePath, FileMode.Create);
         // copy the image to the uploads using the file stream
         await request.Image.CopyToAsync(fileStream, cancellationToken);
+        
+        logger.LogInformation("Image upload successful for product {ProductId}", product.Id);
         
         return mapper.Map<ProductImageViewModel>(productImage);
     }

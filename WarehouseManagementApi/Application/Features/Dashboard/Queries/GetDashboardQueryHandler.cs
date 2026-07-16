@@ -3,11 +3,15 @@ using Application.ViewModels;
 using AutoMapper;
 using Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Dashboard.Queries;
 
 public class GetDashboardQueryHandler(
-    IProductRepository productRepository, ISupplierRepository supplierRepository, IMapper mapper)
+    IProductRepository productRepository,
+    ISupplierRepository supplierRepository,
+    IMapper mapper,
+    ILogger<GetDashboardQueryHandler> logger)
     : IRequestHandler<GetDashboardQuery, Result<DashboardViewModel>>
 {
     public async Task<Result<DashboardViewModel>> Handle(GetDashboardQuery request, CancellationToken cancellationToken)
@@ -17,6 +21,8 @@ public class GetDashboardQueryHandler(
         var archivedCount = await productRepository.GetArchivedCountAsync(cancellationToken);
 
         var dashboard = DashboardBuilder.Build(productCount, supplierCount, archivedCount);
+        
+        logger.LogInformation("Dashboard retrieved");
 
         return Result<DashboardViewModel>.Success(mapper.Map<DashboardViewModel>(dashboard));
     }

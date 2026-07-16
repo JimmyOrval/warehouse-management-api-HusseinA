@@ -3,10 +3,14 @@ using AutoMapper;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Products.Commands.UpdateProductPrice;
 
-public class UpdateProductPriceCommandHandler(IProductRepository productRepository, IMapper mapper)
+public class UpdateProductPriceCommandHandler(
+    IProductRepository productRepository,
+    IMapper mapper,
+    ILogger<UpdateProductPriceCommandHandler> logger)
     : IRequestHandler<UpdateProductPriceCommand, ProductViewModel>
 {
     public async Task<ProductViewModel> Handle(UpdateProductPriceCommand request, CancellationToken cancellationToken)
@@ -14,18 +18,17 @@ public class UpdateProductPriceCommandHandler(IProductRepository productReposito
         var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
         
         if (product == null)
+        {
+            logger.LogWarning("Price update failed: product {ProductId} not found", request.Id);
             throw new NotFoundException($"Product '{request.Id}' not found");
+        }
         
-        // keep track of old values
         var oldPrice = product.Price;
-        var oldLastUpdatedAt = product.LastUpdatedAt;
-
-        // update new values
         product.ChangePrice(request.NewPrice);
         
-        // log changes
-        Console.WriteLine("Old price: " + oldPrice + ", Old LastUpdatedAt: " + oldLastUpdatedAt +
-                          ", New Price: " + product.Price + ", New LastUpdatedAt: " + product.LastUpdatedAt);
+        logger.LogInformation(
+            "Product {ProductId} price updated from {OldPrice} to {NewPrice}",
+            product.Id, oldPrice, request.NewPrice);
         
         await productRepository.SaveChangesAsync(cancellationToken);
         return mapper.Map<ProductViewModel>(product);

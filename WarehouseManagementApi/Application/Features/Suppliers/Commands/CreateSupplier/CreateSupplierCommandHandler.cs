@@ -2,10 +2,14 @@
 using Domain.Interfaces;
 using Domain.Models;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Suppliers.Commands.CreateSupplier;
 
-public class CreateSupplierCommandHandler(ISupplierRepository supplierRepository, IMapper mapper)
+public class CreateSupplierCommandHandler(
+    ISupplierRepository supplierRepository,
+    IMapper mapper,
+    ILogger<CreateSupplierCommandHandler> logger)
     : IRequestHandler<CreateSupplierCommand, string>
 {
     public async Task<string> Handle(CreateSupplierCommand request, CancellationToken cancellationToken)
@@ -14,6 +18,8 @@ public class CreateSupplierCommandHandler(ISupplierRepository supplierRepository
         
         supplierRepository.Add(supplier);
         await supplierRepository.SaveChangesAsync(cancellationToken);
+        
+        logger.LogInformation("Supplier {SupplierId} created", supplier.Id);
         
         return supplier.Id;
     }

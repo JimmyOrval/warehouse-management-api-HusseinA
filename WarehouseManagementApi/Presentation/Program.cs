@@ -10,8 +10,16 @@ using Microsoft.EntityFrameworkCore;
 using Presentation.Errors;
 using Presentation.Filters;
 using Presentation.Middleware;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // now every endpoint logs its actions
 builder.Services.AddControllers(options =>
@@ -65,7 +73,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// every action needs a correlation ID, that's why it's first
+app.UseSerilogRequestLogging();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<RequestTimingMiddleware>();
@@ -78,3 +86,6 @@ app.MapControllers();
 app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
 
 app.Run();
+
+// makes sure no logs are lost before shutdown
+Log.CloseAndFlush();
