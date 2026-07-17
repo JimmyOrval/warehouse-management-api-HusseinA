@@ -5,8 +5,10 @@ using Application.Mappings;
 using Application.Validation;
 using Domain.Interfaces;
 using FluentValidation;
+using HealthChecks.UI.Client;
 using Infrastructure;
 using Infrastructure.Repositories;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Presentation.Errors;
@@ -56,6 +58,31 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "WarehouseManagementApi";
 });
 
+builder.Services.AddDbContext<WarehouseDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        // to tell migrations to save in infrastructure project
+        b => b.MigrationsAssembly("Infrastructure")
+    ));
+
+builder.Services.AddHealthChecks()
+    .AddNpgSql(
+        builder.Configuration.GetConnectionString("DefaultConnection")!,
+        name: "postgresql-check",
+        tags: ["db"])
+    .AddRedis(builder.Configuration.GetConnectionString("Redis")!,
+        name: "redis-check",
+        tags: ["cache"]);
+
+builder.Services.AddHealthChecksUI(setup =>
+{
+    setup.AddHealthCheckEndpoint(
+        "Warehouse API",
+        "/health");
+    
+    setup.SetEvaluationTimeInSeconds(15);
+    setup.MaximumHistoryEntriesPerEndpoint(50);
+}).AddInMemoryStorage();
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
@@ -68,13 +95,6 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(CreateSupplierCommand).Assembly);
     cfg.AddOpenBehavior(typeof(FluentValidationBehavior<,>));
 });
-
-builder.Services.AddDbContext<WarehouseDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        // to tell migrations to save in infrastructure project
-        b => b.MigrationsAssembly("Infrastructure")
-    ));
 
 builder.Services.AddValidatorsFromAssembly(typeof(CreateProductCommand).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(CreateSupplierCommand).Assembly);
@@ -95,6 +115,15 @@ app.UseMiddleware<RequestTimingMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.UseStaticFiles();
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+app.MapHealthChecksUI(options =>
+{
+    options.UIPath = "/health-ui";
+    options.ApiPath = "/health-ui-api";
+});
 app.MapControllers();
 
 
