@@ -1,8 +1,10 @@
-﻿using Application.ViewModels;
+﻿using Application.Common;
+using Application.ViewModels;
 using AutoMapper;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Products.Commands.UpdateProductPrice;
@@ -10,6 +12,7 @@ namespace Application.Features.Products.Commands.UpdateProductPrice;
 public class UpdateProductPriceCommandHandler(
     IProductRepository productRepository,
     IMapper mapper,
+    IDistributedCache cache,
     ILogger<UpdateProductPriceCommandHandler> logger)
     : IRequestHandler<UpdateProductPriceCommand, ProductViewModel>
 {
@@ -26,11 +29,16 @@ public class UpdateProductPriceCommandHandler(
         var oldPrice = product.Price;
         product.ChangePrice(request.NewPrice);
         
+        await productRepository.SaveChangesAsync(cancellationToken);
+        
+        await cache.RemoveAsync(ProductCacheKeys.ById(product.Id), cancellationToken);
+        foreach(var key in ProductCacheKeys.ListVariations)
+            await cache.RemoveAsync(key, cancellationToken);
+        
         logger.LogInformation(
             "Product {ProductId} price updated from {OldPrice} to {NewPrice}",
             product.Id, oldPrice, request.NewPrice);
         
-        await productRepository.SaveChangesAsync(cancellationToken);
         return mapper.Map<ProductViewModel>(product);
     }
 }

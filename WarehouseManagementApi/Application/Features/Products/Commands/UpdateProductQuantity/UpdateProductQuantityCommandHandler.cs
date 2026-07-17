@@ -1,16 +1,18 @@
-﻿using Application.ViewModels;
+﻿using Application.Common;
+using Application.ViewModels;
 using AutoMapper;
-using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Application.Features.Products.Commands.UpdateProductQuantity;
 
 public class UpdateProductQuantityCommandHandler(
     IProductRepository productRepository,
     IMapper mapper,
+    IDistributedCache cache,
     ILogger<UpdateProductQuantityCommandHandler> logger)
     : IRequestHandler<UpdateProductQuantityCommand, WarehouseItemViewModel>
 {
@@ -37,10 +39,19 @@ public class UpdateProductQuantityCommandHandler(
         item.LastStockUpdate = DateTime.Now;
         
         var currentQuantity = productRepository.GetQuantity(request.Id);
-        if (currentQuantity == 0)
+        if (currentQuantity == 0 && currentQuantity < oldQuantity)
+        {
             product.SetOutOfStock();
+        }
 
         await productRepository.SaveChangesAsync(cancellationToken);
+
+        if (currentQuantity == 0 && currentQuantity < oldQuantity)
+        {
+            await cache.RemoveAsync(ProductCacheKeys.ById(product.Id), cancellationToken);
+            foreach(var key in ProductCacheKeys.ListVariations)
+                await cache.RemoveAsync(key, cancellationToken);
+        }
         
         logger.LogInformation(
             "Product {ProductId} quantity updated at {Location} " +

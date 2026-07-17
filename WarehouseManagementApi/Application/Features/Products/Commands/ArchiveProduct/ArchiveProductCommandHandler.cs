@@ -1,8 +1,10 @@
-﻿using Application.ViewModels;
+﻿using Application.Common;
+using Application.ViewModels;
 using AutoMapper;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Products.Commands.ArchiveProduct;
@@ -10,6 +12,7 @@ namespace Application.Features.Products.Commands.ArchiveProduct;
 public class ArchiveProductCommandHandler(
     IProductRepository productRepository,
     IMapper mapper,
+    IDistributedCache cache,
     ILogger<ArchiveProductCommandHandler> logger)
     : IRequestHandler<ArchiveProductCommand, ProductViewModel>
 {
@@ -25,6 +28,10 @@ public class ArchiveProductCommandHandler(
 
         product.Archive();
         await productRepository.SaveChangesAsync(cancellationToken);
+        
+        await cache.RemoveAsync(ProductCacheKeys.ById(product.Id), cancellationToken);
+        foreach(var key in ProductCacheKeys.ListVariations)
+            await cache.RemoveAsync(key, cancellationToken);
         
         logger.LogInformation("Archived product {ProductId}", request.Id);
         

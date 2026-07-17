@@ -1,8 +1,10 @@
-﻿using Application.ViewModels;
+﻿using Application.Common;
+using Application.ViewModels;
 using AutoMapper;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Suppliers.Commands.DeactivateSupplier;
@@ -10,6 +12,7 @@ namespace Application.Features.Suppliers.Commands.DeactivateSupplier;
 public class DeactivateSupplierCommandHandler(
     ISupplierRepository supplierRepository,
     IMapper mapper,
+    IDistributedCache cache,
     ILogger<DeactivateSupplierCommandHandler> logger)
     : IRequestHandler<DeactivateSupplierCommand, SupplierViewModel>
 {
@@ -25,6 +28,9 @@ public class DeactivateSupplierCommandHandler(
         
         supplier.Deactivate();
         await supplierRepository.SaveChangesAsync(cancellationToken);
+        
+        await cache.RemoveAsync(SupplierCacheKeys.ById(supplier.Id), cancellationToken);
+        await cache.RemoveAsync(SupplierCacheKeys.SuppliersList, cancellationToken);
         
         logger.LogInformation("Supplier {SupplierId} deactivated", supplier.Id);
         

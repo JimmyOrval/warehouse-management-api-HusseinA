@@ -2,6 +2,7 @@
 using AutoMapper;
 using Domain.Interfaces;
 using Domain.Models;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -16,7 +17,9 @@ public class CreateProductCommandHandlerTests
         
         var mockMapper = new Mock<IMapper>();
 
-        var mockLogger = new Mock<ILogger>();
+        var mockCache = new Mock<IDistributedCache>();
+
+        var mockLogger = new Mock<ILogger<CreateProductCommandHandler>>();
 
         mockMapper
             .Setup(m => m.Map<Product>(It.IsAny<CreateProductCommand>()))
@@ -38,7 +41,11 @@ public class CreateProductCommandHandlerTests
         repository
             .Setup(r => r.Add(It.IsAny<Product>()));
 
-        var handler = new CreateProductCommandHandler(repository.Object, mockMapper.Object, mockLogger.Object);
+        var handler = new CreateProductCommandHandler(
+            repository.Object,
+            mockMapper.Object,
+            mockCache.Object,
+            mockLogger.Object);
 
         var command = new CreateProductCommand
         (

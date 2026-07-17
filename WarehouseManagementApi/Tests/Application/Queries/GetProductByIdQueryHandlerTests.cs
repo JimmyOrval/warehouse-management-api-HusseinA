@@ -3,6 +3,7 @@ using AutoMapper;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using Domain.Models;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -15,13 +16,18 @@ public class GetProductByIdQueryHandlerTests
     {
         var repository = new Mock<IProductRepository>();
         var mockMapper = new Mock<IMapper>();
-        var mockLogger = new Mock<ILogger>();
+        var mockCache = new Mock<IDistributedCache>();
+        var mockLogger = new Mock<ILogger<GetProductByIdQueryHandler>>();
 
         repository
             .Setup(r => r.GetByIdAsync(It.IsAny<string>(), CancellationToken.None))
             .ReturnsAsync((Product?)null);
 
-        var handler = new GetProductByIdQueryHandler(repository.Object, mockMapper.Object, mockLogger.Object);
+        var handler = new GetProductByIdQueryHandler(
+            repository.Object,
+            mockMapper.Object,
+            mockCache.Object,
+            mockLogger.Object);
 
         var query = new GetProductByIdQuery(Guid.NewGuid().ToString());
 

@@ -13,6 +13,7 @@ using Presentation.Errors;
 using Presentation.Filters;
 using Presentation.Middleware;
 using Serilog;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +48,14 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         return new BadRequestObjectResult(response);
     };
 });
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = 
+        builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "WarehouseManagementApi";
+});
+
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();

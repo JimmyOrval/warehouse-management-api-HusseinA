@@ -1,9 +1,11 @@
-﻿using Application.ViewModels;
+﻿using Application.Common;
+using Application.ViewModels;
 using AutoMapper;
 using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Suppliers.Commands.AssignSupplierToProduct;
@@ -12,6 +14,7 @@ public class AssignSupplierToProductCommandHandler(
     IProductRepository productRepository,
     ISupplierRepository supplierRepository,
     IMapper mapper,
+    IDistributedCache cache,
     ILogger<AssignSupplierToProductCommandHandler> logger)
     : IRequestHandler<AssignSupplierToProductCommand, ProductViewModel>
 {
@@ -41,6 +44,9 @@ public class AssignSupplierToProductCommandHandler(
         
         product.AssignSupplier(supplier);
         await productRepository.SaveChangesAsync(cancellationToken);
+        
+        await cache.RemoveAsync(SupplierCacheKeys.ById(supplier.Id), cancellationToken);
+        await cache.RemoveAsync(SupplierCacheKeys.SuppliersList, cancellationToken);
         
         logger.LogInformation("Product {ProductId} assigned to {SupplierId}", request.Id, request.SupplierId);
         
