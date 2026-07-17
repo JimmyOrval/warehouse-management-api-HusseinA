@@ -1,0 +1,18 @@
+﻿using Application.Features.Products.Commands.CreateProduct;
+using Microsoft.AspNetCore.Mvc;
+using Presentation.Reflection;
+
+namespace Presentation.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class MetadataController : ControllerBase
+{
+    [HttpGet("product")]
+    public IActionResult GetProductMetadata()
+    {
+        return Ok(
+            ValidationMetadataHelper
+                .GetValidationMetadata<CreateProductCommand>());
+    }
+}

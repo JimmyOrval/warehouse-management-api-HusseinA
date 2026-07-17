@@ -1,5 +1,6 @@
 ﻿using Application.ViewModels;
 using AutoMapper;
+using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 
@@ -16,15 +17,15 @@ public class AssignSupplierToProductCommandHandler(
         var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
         
         if(product == null)
-            throw new KeyNotFoundException("Product not found");
+            throw new NotFoundException($"Product '{request.Id}' not found");
         
         if(product.IsArchived)
-            throw new ArgumentException("Product is unavailable");
+            throw new BusinessRuleException($"Product '{product.Name}' is unavailable");
 
         var supplier = await supplierRepository.GetByIdAsync(request.SupplierId, cancellationToken);
 
         if (supplier == null)
-            throw new KeyNotFoundException("Supplier not found");
+            throw new NotFoundException($"Supplier '{request.SupplierId}' not found");
         
         product.AssignSupplier(supplier);
         await productRepository.SaveChangesAsync(cancellationToken);

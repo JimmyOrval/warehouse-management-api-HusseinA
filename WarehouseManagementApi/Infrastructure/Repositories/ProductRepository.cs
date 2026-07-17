@@ -1,4 +1,5 @@
-﻿using Domain.Interfaces;
+﻿using Domain.Enums;
+using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +20,7 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
         return await context.Products
             .Include(p => p.Supplier)
             .Where(p =>
-                !p.IsArchived &&
+                p.Status == ProductStatus.Active &&
                 context.WarehouseItems
                     .Where(w => w.ProductId == p.Id)
                     .Sum(w => (int?)w.QuantityInStock) > 0
@@ -120,6 +121,15 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
     public async Task<int> GetCountAsync(CancellationToken cancellationToken = default)
     {
         return await context.Products.CountAsync(cancellationToken);
+    }
+    
+    public async Task<int> GetArchivedCountAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await context.Products
+            .CountAsync(
+                p => p.Status == ProductStatus.Active,
+                cancellationToken);
     }
 
     public async Task<List<Product>> GetPagedProductsAsync(

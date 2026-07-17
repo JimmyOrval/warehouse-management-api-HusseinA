@@ -1,5 +1,6 @@
 ﻿using Application.ViewModels;
 using AutoMapper;
+using Domain.Exceptions;
 using Domain.Interfaces;
 using Domain.Models;
 using MediatR;
@@ -15,7 +16,7 @@ public class UploadProductImageCommandHandler(IProductRepository productReposito
         var product = await productRepository.GetByIdAsync(request.ProductId, cancellationToken);
         
         if (product == null)
-            throw new KeyNotFoundException("Product not found");
+            throw new NotFoundException($"Product '{request.ProductId}' not found");
         
         // if file is invalid
         if(request.ImageLength == 0)

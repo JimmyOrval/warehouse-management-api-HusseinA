@@ -1,5 +1,6 @@
 ﻿using Application.ViewModels;
 using AutoMapper;
+using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 
@@ -10,13 +11,10 @@ public class GetSupplierByIdQueryHandler(ISupplierRepository supplierRepository,
 {
     public async Task<SupplierViewModel> Handle(GetSupplierByIdQuery request, CancellationToken cancellationToken)
     {
-        if (request.Id.Length != 36)
-            throw new ArgumentException("Invalid ID format");
-        
         var supplier = await supplierRepository.GetByIdAsync(request.Id, cancellationToken);
         
         return supplier == null
-            ? throw new KeyNotFoundException("Supplier not found")
+            ? throw new NotFoundException($"Supplier '{request.Id}' not found")
             : mapper.Map<SupplierViewModel>(supplier);
     }
 }

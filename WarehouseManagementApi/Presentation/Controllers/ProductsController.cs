@@ -11,9 +11,9 @@ using Application.Features.Products.Queries.GroupByExpiryYear;
 using Application.Features.Products.Queries.GroupByExpiryYearAndSupplierCountry;
 using Application.Features.Products.Queries.ListProducts;
 using Application.Features.Products.Queries.SearchProducts;
-using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Filters;
 
 namespace Presentation.Controllers;
 
@@ -22,59 +22,74 @@ namespace Presentation.Controllers;
 public class ProductsController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetProducts([FromQuery] bool? onlyAvailable = true)
+    public async Task<IActionResult> GetProducts([FromQuery] bool? onlyAvailable = true,
+        CancellationToken cancellationToken = default)
     {
-        return Ok(await mediator.Send(new ListProductsQuery(onlyAvailable)));
+        return Ok(await mediator.Send(new ListProductsQuery(onlyAvailable),
+            cancellationToken));
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetProductById([FromRoute] string id)
+    public async Task<IActionResult> GetProductById([FromRoute] string id,
+        CancellationToken cancellationToken = default)
     {
-        var product = await mediator.Send(new GetProductByIdQuery(id));
+        var product = await mediator.Send(new GetProductByIdQuery(id),
+            cancellationToken);
         return Ok(product);
     }
 
     [HttpGet("search")]
-    public async Task<IActionResult> Search([FromQuery] string? name, [FromQuery] string? supplier)
+    public async Task<IActionResult> Search([FromQuery] string? name,
+        [FromQuery] string? supplier,
+        CancellationToken cancellationToken = default)
     {
-        return Ok(await mediator.Send(new SearchProductsQuery(name, supplier)));
+        return Ok(await mediator.Send(new SearchProductsQuery(name, supplier),
+            cancellationToken));
     }
 
+    [ServiceFilter(typeof(ModelValidationFilter))]
     [HttpPost]
-    public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command)
+    public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command,
+        CancellationToken cancellationToken = default)
     {
-        var productId = await mediator.Send(command);
+        var productId = await mediator.Send(command, cancellationToken);
         
         return CreatedAtAction(nameof(GetProductById), new { id = productId }, null);
     }
 
     [HttpPut("{id}/quantity/{location}")]
     public async Task<IActionResult> UpdateQuantity([FromRoute] string id,
-        [FromBody] int quantity, [FromRoute] string location)
+        [FromBody] int quantity, [FromRoute] string location,
+        CancellationToken cancellationToken = default)
     {
         return Ok(await mediator.Send(new
             UpdateProductQuantityCommand(
-                id, quantity, location)));
+                id, quantity, location),
+            cancellationToken));
     }
 
     [HttpPut("{id}/price")]
-    public async Task<IActionResult> UpdatePrice([FromRoute] string id, [FromBody] decimal newPrice)
+    public async Task<IActionResult> UpdatePrice([FromRoute] string id,
+        [FromBody] decimal newPrice, CancellationToken cancellationToken = default)
     {
-        return Ok(await mediator.Send(new UpdateProductPriceCommand(id, newPrice)));
+        return Ok(await mediator.Send(new UpdateProductPriceCommand(id, newPrice),
+            cancellationToken));
     }
 
     [HttpPost("{id}/image")]
-    public async Task<IActionResult> UploadImage(string id, IFormFile image)
+    public async Task<IActionResult> UploadImage(string id, IFormFile image,
+        CancellationToken cancellationToken = default)
     {
         await using var stream = image.OpenReadStream();
         return Ok(await mediator.Send(new UploadProductImageCommand(
-            id, stream, image.Length, image.FileName)));
+            id, stream, image.Length, image.FileName), cancellationToken));
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteProduct([FromRoute] string id)
+    public async Task<IActionResult> DeleteProduct([FromRoute] string id,
+        CancellationToken cancellationToken = default)
     {
-        await mediator.Send(new ArchiveProductCommand(id));
+        await mediator.Send(new ArchiveProductCommand(id), cancellationToken);
         return NoContent();
     }
     
@@ -102,33 +117,42 @@ public class ProductsController(IMediator mediator) : ControllerBase
     [HttpGet("supplier")]
     public async Task<IActionResult> GetProductsBySupplier(
         [FromQuery] string supplierName,
-        [FromQuery] bool isAscending)
+        [FromQuery] bool isAscending,
+        CancellationToken cancellationToken = default)
     {
         return Ok(await mediator.Send(new GetProductsBySupplierQuery
-            (supplierName, isAscending)));
+            (supplierName, isAscending), cancellationToken));
     }
 
     [HttpGet("year")]
-    public async Task<IActionResult> GroupByExpiryYear()
+    public async Task<IActionResult> GroupByExpiryYear(
+        CancellationToken cancellationToken = default)
     {
-        return Ok(await mediator.Send(new GroupByExpiryYearQuery()));
+        return Ok(await mediator.Send(new GroupByExpiryYearQuery(),
+            cancellationToken));
     }
 
     [HttpGet("year/country")]
-    public async Task<IActionResult> GroupByExpiryYearAndSupplierCountry()
+    public async Task<IActionResult> GroupByExpiryYearAndSupplierCountry(
+        CancellationToken cancellationToken = default)
     {
-        return Ok(await mediator.Send(new GroupByExpiryYearAndSupplierCountryQuery()));
+        return Ok(await mediator.Send(new GroupByExpiryYearAndSupplierCountryQuery(),
+            cancellationToken));
     }
 
     [HttpGet("count")]
-    public async Task<IActionResult> GetCount()
+    public async Task<IActionResult> GetCount(CancellationToken cancellationToken = default)
     {
-        return Ok(await mediator.Send(new GetProductCountQuery()));
+        return Ok(await mediator.Send(new GetProductCountQuery(), cancellationToken));
     }
 
     [HttpGet("page")]
-    public async Task<IActionResult> GetProductsByPage([FromQuery] int pageNumber, [FromQuery] int pageSize)
+    public async Task<IActionResult> GetProductsByPage(
+        [FromQuery] int pageNumber,
+        [FromQuery] int pageSize,
+        CancellationToken cancellationToken = default)
     {
-        return Ok(await mediator.Send(new GetPagedProductsQuery(pageNumber, pageSize)));
+        return Ok(await mediator.Send(new GetPagedProductsQuery(pageNumber, pageSize),
+            cancellationToken));
     }
 }

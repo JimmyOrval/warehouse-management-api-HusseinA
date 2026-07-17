@@ -1,5 +1,6 @@
 ﻿using Application.ViewModels;
 using AutoMapper;
+using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 
@@ -12,14 +13,10 @@ public class ArchiveProductCommandHandler(
 {
     public async Task<ProductViewModel> Handle(ArchiveProductCommand request, CancellationToken cancellationToken)
     {
-        // ID should match GUID format
-        if (request.Id?.Length != 36)
-            throw new ArgumentException("Invalid ID format");
-
         var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (product == null)
-            throw new KeyNotFoundException("Product not found");
+            throw new NotFoundException($"Product '{request.Id}' not found");
 
         product.Archive();
         await productRepository.SaveChangesAsync(cancellationToken);

@@ -1,5 +1,6 @@
 ﻿using Application.ViewModels;
 using AutoMapper;
+using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 
@@ -10,13 +11,10 @@ public class GetProductByIdQueryHandler(IProductRepository productRepository, IM
 {
     public async Task<ProductViewModel?> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
     {
-        if (request.Id.Length != 36)
-            throw new ArgumentException("Invalid ID format");
-        
         var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
 
         return product == null
-            ? throw new KeyNotFoundException("Product not found")
+            ? throw new NotFoundException($"Product '{request.Id}' not found")
             : mapper.Map<ProductViewModel>(product);
     }
 }

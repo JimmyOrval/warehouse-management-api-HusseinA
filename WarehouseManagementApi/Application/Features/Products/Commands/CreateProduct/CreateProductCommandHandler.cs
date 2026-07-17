@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Domain.Exceptions;
 using Domain.Interfaces;
 using Domain.Models;
 using MediatR;
@@ -13,7 +14,7 @@ public class CreateProductCommandHandler(IProductRepository productRepository, I
         // check if duplicate SKU already exists
         if (await productRepository.SkuExistsAsync(request.Sku, cancellationToken))
         {
-            throw new Exception($"Product SKU already exists");
+            throw new BusinessRuleException($"Product SKU '{request.Sku}' already exists");
         }
         
         var product = mapper.Map<Product>(request);
