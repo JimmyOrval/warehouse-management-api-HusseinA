@@ -18,6 +18,7 @@ public class UploadProductImageCommandHandler(IProductRepository productReposito
         if (product == null)
             throw new NotFoundException($"Product '{request.ProductId}' not found");
         
+        /* NOW IS DONE INSIDE VALIDATOR
         // if file is invalid
         if(request.ImageLength == 0)
             throw new ArgumentException("No image was provided");
@@ -28,6 +29,7 @@ public class UploadProductImageCommandHandler(IProductRepository productReposito
         // check if image size exceeds the limit
         if (request.ImageLength > maxFileSize)
             throw new ArgumentException("Image size cannot exceed 2MB");
+        */
         
         // get the image's extension
         var extension = Path.GetExtension(request.FileName).ToLower();

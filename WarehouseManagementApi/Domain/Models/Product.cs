@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations; 
+﻿using System.ComponentModel.DataAnnotations;
+using Domain.Enums;
+using Domain.Exceptions;
 
 namespace Domain.Models;
 
@@ -21,7 +23,7 @@ public class Product
     
     [Required(ErrorMessage = "Price is required")]
     [Range(0.1, double.MaxValue, ErrorMessage =  "Price cannot be negative")]
-    public decimal Price { get; set; } = 0.00m;
+    public decimal Price { get; set; } = 0.01m;
     
     [Required(ErrorMessage = "Supplier ID is required")]
     [MinLength(36, ErrorMessage = "Supplier ID cannot be shorter than 36 characters")]
@@ -33,7 +35,8 @@ public class Product
     [Required(ErrorMessage = "Expiry date is required")]
     public DateTime ExpiryDate { get; init; }
     
-    public bool IsArchived { get; set; }
+    // set is private since only domain logic can update it
+    public ProductStatus Status { get; private set; } = ProductStatus.Active;
     
     [Required]
     public DateTime CreatedAt { get; init; } =  DateTime.UtcNow;
@@ -42,16 +45,21 @@ public class Product
 
     public void Archive()
     {
-        if(IsArchived)
+        if(Status == ProductStatus.Archived)
             throw new InvalidOperationException("Product already archived");
-        IsArchived = true;
+        
+        Status = ProductStatus.Archived;
         LastUpdatedAt = DateTime.UtcNow;
     }
 
     public void AssignSupplier(Supplier supplier)
     {
         if(!supplier.IsActive)
-            throw new ArgumentException("Supplier is not active");
+            throw new BusinessRuleException("Supplier is not active");
+        
+        if(SupplierId == supplier.Id)
+            throw new BusinessRuleException("Supplier is already assigned");
+        
         SupplierId = supplier.Id;
         LastUpdatedAt = DateTime.UtcNow;
     }
@@ -59,11 +67,18 @@ public class Product
     public void ChangePrice(decimal newPrice)
     {
         if(newPrice<=0)
-            throw new ArgumentException("Price must be greater than 0");
-        if(IsArchived)
-            throw new InvalidOperationException("Product is not available");
+            throw new ValidationException("Price must be greater than 0");
+        
+        if(Status != ProductStatus.Active)
+            throw new BusinessRuleException("Product is not available");
         
         Price = newPrice;
+        LastUpdatedAt = DateTime.UtcNow;
+    }
+
+    public void SetOutOfStock()
+    {
+        Status = ProductStatus.OutOfStock;
         LastUpdatedAt = DateTime.UtcNow;
     }
 }

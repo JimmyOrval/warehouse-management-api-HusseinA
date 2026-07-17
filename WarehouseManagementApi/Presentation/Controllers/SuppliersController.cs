@@ -1,4 +1,4 @@
-﻿using Application.Features.Products.Commands.AssignSupplierToProduct;
+﻿using Application.Features.Suppliers.Commands.AssignSupplierToProduct;
 using Application.Features.Suppliers.Commands.CreateSupplier;
 using Application.Features.Suppliers.Commands.DeactivateSupplier;
 using Application.Features.Suppliers.Queries.GetSupplierById;
