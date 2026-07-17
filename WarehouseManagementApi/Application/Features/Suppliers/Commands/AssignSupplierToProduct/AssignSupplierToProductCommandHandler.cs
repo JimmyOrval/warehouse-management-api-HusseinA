@@ -1,10 +1,11 @@
 ﻿using Application.ViewModels;
 using AutoMapper;
+using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 
-namespace Application.Features.Products.Commands.AssignSupplierToProduct;
+namespace Application.Features.Suppliers.Commands.AssignSupplierToProduct;
 
 public class AssignSupplierToProductCommandHandler(
     IProductRepository productRepository,
@@ -19,7 +20,7 @@ public class AssignSupplierToProductCommandHandler(
         if(product == null)
             throw new NotFoundException($"Product '{request.Id}' not found");
         
-        if(product.IsArchived)
+        if(product.Status == ProductStatus.Archived)
             throw new BusinessRuleException($"Product '{product.Name}' is unavailable");
 
         var supplier = await supplierRepository.GetByIdAsync(request.SupplierId, cancellationToken);
