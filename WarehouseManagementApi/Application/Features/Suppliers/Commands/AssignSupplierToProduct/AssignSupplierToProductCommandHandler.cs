@@ -1,6 +1,6 @@
-﻿using Application.Features.Products.Commands.AssignSupplierToProduct;
-using Application.ViewModels;
+﻿using Application.ViewModels;
 using AutoMapper;
+using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
@@ -25,7 +25,7 @@ public class AssignSupplierToProductCommandHandler(
             throw new NotFoundException($"Product '{request.Id}' not found");
         }
         
-        if(product.IsArchived)
+        if(product.Status == ProductStatus.Archived)
         {
             logger.LogWarning("Product assignment failed: product {ProductId} is unavailable", request.Id);
             throw new BusinessRuleException($"Product '{product.Name}' is unavailable");

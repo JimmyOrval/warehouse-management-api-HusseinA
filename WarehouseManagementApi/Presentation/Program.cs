@@ -1,8 +1,10 @@
+using System.Text.Json.Serialization;
 using Application.Features.Products.Commands.CreateProduct;
 using Application.Features.Suppliers.Commands.CreateSupplier;
 using Application.Mappings;
 using Application.Validation;
 using Domain.Interfaces;
+using FluentValidation;
 using Infrastructure;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +28,9 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ActionLoggingFilter>();
     options.Filters.AddService<ModelValidationFilter>();
-});
+})
+.AddJsonOptions(options =>
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -53,7 +57,7 @@ builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(CreateProductCommand).Assembly);
     cfg.RegisterServicesFromAssembly(typeof(CreateSupplierCommand).Assembly);
-    cfg.AddOpenBehavior(typeof(DataAnnotationValidationBehavior<,>));
+    cfg.AddOpenBehavior(typeof(FluentValidationBehavior<,>));
 });
 
 builder.Services.AddDbContext<WarehouseDbContext>(options =>
@@ -63,6 +67,8 @@ builder.Services.AddDbContext<WarehouseDbContext>(options =>
         b => b.MigrationsAssembly("Infrastructure")
     ));
 
+builder.Services.AddValidatorsFromAssembly(typeof(CreateProductCommand).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(CreateSupplierCommand).Assembly);
 builder.Services.AddAutoMapper(cfg => {}, typeof(ProductMapper).Assembly);
 
 var app = builder.Build();

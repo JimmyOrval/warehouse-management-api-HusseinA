@@ -1,4 +1,6 @@
-﻿namespace Application.ViewModels;
+﻿using Domain.Enums;
+
+namespace Application.ViewModels;
 
 public class ProductViewModel
 {
@@ -14,7 +16,7 @@ public class ProductViewModel
 
     public DateTime ExpiryDate { get; init; }
 
-    public bool IsArchived { get; init; }
+    public ProductStatus Status { get; init; }
 
     public required string SupplierId { get; init; }
 

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Domain.Exceptions;
 using Presentation.Errors;
+using FluentValidation;
 
 namespace Presentation.Middleware;
 
@@ -38,7 +39,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
                     ErrorCodes.BusinessRule,
                     exception.Message),
             
-            RequestValidationException =>
+            ValidationException =>
                 (StatusCodes.Status400BadRequest,
                     ErrorCodes.Validation,
                     exception.Message),

@@ -1,5 +1,6 @@
 ﻿using Application.ViewModels;
 using AutoMapper;
+using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
@@ -34,6 +35,10 @@ public class UpdateProductQuantityCommandHandler(
         
         item.QuantityInStock = request.Quantity;
         item.LastStockUpdate = DateTime.Now;
+        
+        var currentQuantity = productRepository.GetQuantity(request.Id);
+        if (currentQuantity == 0)
+            product.SetOutOfStock();
 
         await productRepository.SaveChangesAsync(cancellationToken);
         
