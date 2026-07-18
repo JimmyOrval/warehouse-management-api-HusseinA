@@ -34,7 +34,6 @@
 
     <ItemGroup>
       <Folder Include="Application\Caching\" />
-      <Folder Include="Presentation\" />
     </ItemGroup>
 
 </Project>
