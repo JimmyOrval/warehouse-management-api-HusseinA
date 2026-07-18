@@ -7,6 +7,7 @@ A Warehouse Management API For Managing Warehouse Products Using An In-memory Li
 - [Session 3](#session-3)
 - [Session 4](#session-4)
 - [Session 5](#session-5)
+- [Session 6](#session-6)
 
 # Session 2
 ## Features
@@ -269,9 +270,50 @@ Async/await is now used consistently throughout controllers, handlers and reposi
 
 A generic `Result<T>` type was introduced to demonstrate generic result handling without changing the overall exception-based architecture.
 
-Reflection here was used here to inspect validation attributes applied to request models. A metadata endpoint was added to return example validation information.
+Reflection here was used to inspect validation attributes applied to request models. A metadata endpoint was added to return example validation information.
 
 ## Notes
 
 - Validation now happens before requests reach the application layer whenever possible.
 - A small test was added for reflection.
+
+
+# Session 6
+
+## Observability and Performance
+
+I focused on making the API production-ready from an operational standpoint: multi-language support, centralized logging, caching, health monitoring, and calling automatic background jobs.
+
+## Localization
+
+- Configured `RequestLocalizationOptions` supporting `en-US` (default), `fr`, and `ar`.
+- Culture can be switched directly from Swagger, which adds a `culture` query parameter dropdown to every endpoint.
+- Rather than localizing every data annotation individually, localization was applied at the error-response boundary: `ExceptionHandlingMiddleware` now returns a localized message for each error category (Not Found / Business Rule / Validation / Internal) using `IStringLocalizer`, while the specific detail (which product) stays in the Serilog logs. This keeps the response small without leaking internal details to clients.
+
+## Logging
+
+- Serilog was configured as the logging provider, writing structured logs to both console and a daily-generated file (`Logs/log-.txt`, kept for 7 days).
+- `CorrelationIdMiddleware` now properly pushes the correlation ID into Serilog's `LogContext`, so every log line for a request can be traced back to the same ID returned in `ErrorResponse.TraceId`.
+- Business-relevant events (product created, price changed, archived...) are logged with structured named properties across command handlers.
+- `RequestTimingMiddleware` was changed into slow-request logging: only logs requests exceeding 500ms, avoiding duplication with Serilog, which already logs every request's details.
+
+## Caching
+
+- Redis caching was implemented using `IDistributedCache`.
+- Cached: `GET /api/products/{id}`, `GET /api/products`, `GET /api/suppliers/{id}`, `GET /api/suppliers`. Expire in 5 minutes.
+- Not cached: search (bad hit rate), count (cheap query), server-time, and grouping/paging endpoints.
+- Invalidation: writing handlers delete the relevant single-entity and list keys after a successful save.
+- Added a cache statistics endpoint (`GET /api/cache/stats`) returning cached keys, hit/miss counts, and last refresh time.
+
+## Health Checks
+
+- `/health` endpoint shows PostgreSQL and Redis status using `AspNetCore.HealthChecks`.
+- Health Checks UI runs at `/health-ui`, and uses in-memory storage for check history.
+- The Redis check was replaced with a custom `RedisRetryHealthCheck` that retries up to 3 times before showing unhealthy.
+
+## Background Jobs
+
+- Hangfire was configured with PostgreSQL as its storage (`Hangfire.PostgreSql`).
+- A daily job (`ExpiryCheckJob`) checks for expired and soon-to-expire (within 30 days) products.
+- Added auto-archive functionality for products expired for more than 7 days, updating `ProductStatus` and logging each archived product, including cache invalidation where necessary.
+- Hangfire Dashboard runs at `/hangfire`.
