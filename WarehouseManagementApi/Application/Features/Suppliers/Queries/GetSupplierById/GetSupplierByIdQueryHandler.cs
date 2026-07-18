@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Application.Common;
 using Application.ViewModels;
 using AutoMapper;
 using Domain.Exceptions;
@@ -13,6 +14,7 @@ public class GetSupplierByIdQueryHandler(
     ISupplierRepository supplierRepository,
     IMapper mapper,
     IDistributedCache cache,
+    ICacheStatsTracker cacheStats,
     ILogger<GetSupplierByIdQueryHandler> logger)
     : IRequestHandler<GetSupplierByIdQuery, SupplierViewModel>
 {
@@ -24,6 +26,7 @@ public class GetSupplierByIdQueryHandler(
         if (cached != null)
         {
             logger.LogInformation("Cache hit for {CacheKey}", cacheKey);
+            cacheStats.RecordHit();
             return JsonSerializer.Deserialize<SupplierViewModel>(cached)!;
         }
         
@@ -45,6 +48,8 @@ public class GetSupplierByIdQueryHandler(
                     cancellationToken);
         
         logger.LogInformation("Cache miss for {CacheKey}, value cached", cacheKey);
+        cacheStats.RecordMiss();
+        cacheStats.RecordSet(cacheKey);
         logger.LogInformation("Supplier {SupplierId} retrieved", supplier.Id);
 
         return viewModel;

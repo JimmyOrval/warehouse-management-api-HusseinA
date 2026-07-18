@@ -13,6 +13,7 @@ public class ArchiveProductCommandHandler(
     IProductRepository productRepository,
     IMapper mapper,
     IDistributedCache cache,
+    ICacheStatsTracker cacheStats,
     ILogger<ArchiveProductCommandHandler> logger)
     : IRequestHandler<ArchiveProductCommand, ProductViewModel>
 {
@@ -30,8 +31,13 @@ public class ArchiveProductCommandHandler(
         await productRepository.SaveChangesAsync(cancellationToken);
         
         await cache.RemoveAsync(ProductCacheKeys.ById(product.Id), cancellationToken);
+        cacheStats.RecordRemoval(ProductCacheKeys.ById(product.Id));
+        
         foreach(var key in ProductCacheKeys.ListVariations)
+        {
             await cache.RemoveAsync(key, cancellationToken);
+            cacheStats.RecordRemoval(key);
+        }
         
         logger.LogInformation("Archived product {ProductId}", request.Id);
         

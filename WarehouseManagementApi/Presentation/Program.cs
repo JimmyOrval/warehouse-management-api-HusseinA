@@ -1,13 +1,18 @@
 using System.Globalization;
 using System.Text.Json.Serialization;
+using Application.Common;
 using Application.Features.Products.Commands.CreateProduct;
 using Application.Features.Suppliers.Commands.CreateSupplier;
+using Application.Jobs;
 using Application.Mappings;
 using Application.Validation;
 using Domain.Interfaces;
 using FluentValidation;
+using Hangfire;
+using Hangfire.PostgreSql;
 using HealthChecks.UI.Client;
 using Infrastructure;
+using Infrastructure.HealthChecks;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Localization;
@@ -91,9 +96,7 @@ builder.Services.AddHealthChecks()
         builder.Configuration.GetConnectionString("DefaultConnection")!,
         name: "postgresql-check",
         tags: ["db"])
-    .AddRedis(builder.Configuration.GetConnectionString("Redis")!,
-        name: "redis-check",
-        tags: ["cache"]);
+    .AddCheck<RedisRetryHealthCheck>("Redis", tags: ["cache"]);
 
 builder.Services.AddHealthChecksUI(setup =>
 {
@@ -109,6 +112,10 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<ActionLoggingFilter>();
 builder.Services.AddScoped<ModelValidationFilter>();
+builder.Services.AddScoped<IExpiryCheckJob, ExpiryCheckJob>();
+builder.Services.AddSingleton<ICacheStatsTracker, CacheStatsTracker>();
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
 
 builder.Services.AddMediatR(cfg =>
 {
@@ -120,6 +127,14 @@ builder.Services.AddMediatR(cfg =>
 builder.Services.AddValidatorsFromAssembly(typeof(CreateProductCommand).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(CreateSupplierCommand).Assembly);
 builder.Services.AddAutoMapper(cfg => {}, typeof(ProductMapper).Assembly);
+builder.Services.AddHangfire(config => config
+    .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(
+        builder.Configuration.GetConnectionString("DefaultConnection")),
+        new PostgreSqlStorageOptions
+        {
+            PrepareSchemaIfNecessary = true
+        }));
+builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
@@ -133,7 +148,7 @@ app.UseRequestLocalization();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.UseMiddleware<RequestTimingMiddleware>();
+app.UseMiddleware<SlowRequestLoggingMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.UseStaticFiles();
@@ -148,6 +163,11 @@ app.MapHealthChecksUI(options =>
 });
 app.MapControllers();
 
+app.UseHangfireDashboard();
+RecurringJob.AddOrUpdate<IExpiryCheckJob>(
+    "check-expiring-products",
+    job => job.CheckExpiringProductsAsync(CancellationToken.None),
+    Cron.Daily);
 
 app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
 

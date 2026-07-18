@@ -13,6 +13,7 @@ public class CreateProductCommandHandler(
     IProductRepository productRepository,
     IMapper mapper,
     IDistributedCache cache,
+    ICacheStatsTracker cacheStats,
     ILogger<CreateProductCommandHandler> logger)
     : IRequestHandler<CreateProductCommand, string>
 {
@@ -33,8 +34,13 @@ public class CreateProductCommandHandler(
         await productRepository.SaveChangesAsync(cancellationToken);
         
         await cache.RemoveAsync(ProductCacheKeys.ById(product.Id), cancellationToken);
+        cacheStats.RecordRemoval(ProductCacheKeys.ById(product.Id));
+        
         foreach(var key in ProductCacheKeys.ListVariations)
+        {
             await cache.RemoveAsync(key, cancellationToken);
+            cacheStats.RecordRemoval(key);
+        }
         
         logger.LogInformation("Product {ProductId} created", product.Id);
         

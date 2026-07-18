@@ -13,6 +13,7 @@ public class UpdateProductPriceCommandHandler(
     IProductRepository productRepository,
     IMapper mapper,
     IDistributedCache cache,
+    ICacheStatsTracker cacheStats,
     ILogger<UpdateProductPriceCommandHandler> logger)
     : IRequestHandler<UpdateProductPriceCommand, ProductViewModel>
 {
@@ -32,8 +33,13 @@ public class UpdateProductPriceCommandHandler(
         await productRepository.SaveChangesAsync(cancellationToken);
         
         await cache.RemoveAsync(ProductCacheKeys.ById(product.Id), cancellationToken);
+        cacheStats.RecordRemoval(ProductCacheKeys.ById(product.Id));
+        
         foreach(var key in ProductCacheKeys.ListVariations)
+        {
             await cache.RemoveAsync(key, cancellationToken);
+            cacheStats.RecordRemoval(key);
+        }
         
         logger.LogInformation(
             "Product {ProductId} price updated from {OldPrice} to {NewPrice}",

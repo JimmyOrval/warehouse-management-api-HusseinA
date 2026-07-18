@@ -1,4 +1,5 @@
-﻿using Application.Features.Products.Commands.CreateProduct;
+﻿using Application.Common;
+using Application.Features.Products.Commands.CreateProduct;
 using AutoMapper;
 using Domain.Interfaces;
 using Domain.Models;
@@ -18,6 +19,8 @@ public class CreateProductCommandHandlerTests
         var mockMapper = new Mock<IMapper>();
 
         var mockCache = new Mock<IDistributedCache>();
+
+        var mockCacheStats = new Mock<ICacheStatsTracker>();
 
         var mockLogger = new Mock<ILogger<CreateProductCommandHandler>>();
 
@@ -45,6 +48,7 @@ public class CreateProductCommandHandlerTests
             repository.Object,
             mockMapper.Object,
             mockCache.Object,
+            mockCacheStats.Object,
             mockLogger.Object);
 
         var command = new CreateProductCommand

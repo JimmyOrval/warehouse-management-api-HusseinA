@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Application.Common;
 using Application.ViewModels;
 using AutoMapper;
 using Domain.Interfaces;
@@ -12,6 +13,7 @@ public class ListSuppliersQueryHandler(
     ISupplierRepository supplierRepository,
     IMapper mapper,
     IDistributedCache cache,
+    ICacheStatsTracker cacheStats,
     ILogger<ListSuppliersQueryHandler> logger)
     : IRequestHandler<ListSuppliersQuery, IEnumerable<SupplierViewModel>>
 {
@@ -23,6 +25,7 @@ public class ListSuppliersQueryHandler(
         if (cached != null)
         {
             logger.LogInformation("Cache hit for {CacheKey}", cacheKey);
+            cacheStats.RecordHit();
             return JsonSerializer.Deserialize<IEnumerable<SupplierViewModel>>(cached)!;
         }
         
@@ -38,6 +41,8 @@ public class ListSuppliersQueryHandler(
                     cancellationToken);
         
         logger.LogInformation("Cached miss for {CacheKey}, value cached", cacheKey);
+        cacheStats.RecordMiss();
+        cacheStats.RecordSet(cacheKey);
         logger.LogInformation("All suppliers retrieved");
         return viewModels;
     }

@@ -1,4 +1,5 @@
-﻿using Application.Features.Products.Queries.GetProductById;
+﻿using Application.Common;
+using Application.Features.Products.Queries.GetProductById;
 using AutoMapper;
 using Domain.Exceptions;
 using Domain.Interfaces;
@@ -17,6 +18,7 @@ public class GetProductByIdQueryHandlerTests
         var repository = new Mock<IProductRepository>();
         var mockMapper = new Mock<IMapper>();
         var mockCache = new Mock<IDistributedCache>();
+        var mockCacheStats = new Mock<ICacheStatsTracker>();
         var mockLogger = new Mock<ILogger<GetProductByIdQueryHandler>>();
 
         repository
@@ -27,6 +29,7 @@ public class GetProductByIdQueryHandlerTests
             repository.Object,
             mockMapper.Object,
             mockCache.Object,
+            mockCacheStats.Object,
             mockLogger.Object);
 
         var query = new GetProductByIdQuery(Guid.NewGuid().ToString());

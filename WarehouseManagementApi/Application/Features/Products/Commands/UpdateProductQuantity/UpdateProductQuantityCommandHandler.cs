@@ -13,6 +13,7 @@ public class UpdateProductQuantityCommandHandler(
     IProductRepository productRepository,
     IMapper mapper,
     IDistributedCache cache,
+    ICacheStatsTracker cacheStats,
     ILogger<UpdateProductQuantityCommandHandler> logger)
     : IRequestHandler<UpdateProductQuantityCommand, WarehouseItemViewModel>
 {
@@ -49,8 +50,13 @@ public class UpdateProductQuantityCommandHandler(
         if (currentQuantity == 0 && currentQuantity < oldQuantity)
         {
             await cache.RemoveAsync(ProductCacheKeys.ById(product.Id), cancellationToken);
+            cacheStats.RecordRemoval(ProductCacheKeys.ById(product.Id));
+            
             foreach(var key in ProductCacheKeys.ListVariations)
+            {
                 await cache.RemoveAsync(key, cancellationToken);
+                cacheStats.RecordRemoval(key);
+            }
         }
         
         logger.LogInformation(

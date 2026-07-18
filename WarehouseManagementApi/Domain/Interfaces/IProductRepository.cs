@@ -37,6 +37,10 @@ public interface IProductRepository
     
     Task<List<Product>> GetPagedProductsAsync(
         int pageNumber, int pageSize, CancellationToken cancellationToken);
+
+    Task<List<Product>> GetExpiringOrExpiredAsync(DateTime date, CancellationToken cancellationToken);
+
+    Task<List<Product>> GetExpiredOlderThanDateAsync(DateTime date, CancellationToken cancellationToken);
     
     WarehouseItem? GetWarehouseItem(string productId, string location);
                                                                                  

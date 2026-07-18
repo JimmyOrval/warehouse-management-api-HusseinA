@@ -145,6 +145,22 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<List<Product>> GetExpiringOrExpiredAsync(DateTime date, CancellationToken cancellationToken)
+    {
+        return await context.Products
+            .Where(p => p.Status != ProductStatus.Archived
+                        && p.ExpiryDate <= date)
+            .ToListAsync(cancellationToken);
+    }
+
+    // same as above, but definition and usage differ
+    public async Task<List<Product>> GetExpiredOlderThanDateAsync(DateTime date, CancellationToken cancellationToken)
+    {
+        return await context.Products
+            .Where(p => p.Status != ProductStatus.Archived)
+            .ToListAsync(cancellationToken);
+    }
+
     // I will later create a separate WarehouseItem
     // repository for the following methods
     public WarehouseItem? GetWarehouseItem(string productId, string location)

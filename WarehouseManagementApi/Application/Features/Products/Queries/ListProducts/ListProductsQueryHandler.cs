@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Application.Common;
 using Application.ViewModels;
 using AutoMapper;
 using Domain.Interfaces;
@@ -13,6 +14,7 @@ public class ListProductsQueryHandler(
     IProductRepository productRepository,
     IMapper mapper,
     IDistributedCache cache,
+    ICacheStatsTracker cacheStats,
     ILogger<ListProductsQueryHandler> logger)
     : IRequestHandler<ListProductsQuery, IEnumerable<ProductViewModel>>
 {
@@ -24,6 +26,7 @@ public class ListProductsQueryHandler(
         if (cached != null)
         {
             logger.LogInformation("Cached hit for {cacheKey}", cacheKey);
+            cacheStats.RecordHit();
             return JsonSerializer.Deserialize<IEnumerable<ProductViewModel>>(cached)!;
         }
         
@@ -48,7 +51,9 @@ public class ListProductsQueryHandler(
                 { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) },
             cancellationToken);
         
-        logger.LogInformation("Cached miss for {cacheKey}, value cached", cacheKey);
+        logger.LogInformation("Cache miss for {cacheKey}, value cached", cacheKey);
+        cacheStats.RecordMiss();
+        cacheStats.RecordSet(cacheKey);
         return viewModels;
     }
 }

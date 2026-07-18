@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Application.Common;
 using Application.ViewModels;
 using AutoMapper;
 using Domain.Exceptions;
@@ -13,6 +14,7 @@ public class GetProductByIdQueryHandler(
     IProductRepository productRepository,
     IMapper mapper,
     IDistributedCache cache,
+    ICacheStatsTracker cacheStats,
     ILogger<GetProductByIdQueryHandler> logger)
     : IRequestHandler<GetProductByIdQuery, ProductViewModel?>
 {
@@ -24,6 +26,7 @@ public class GetProductByIdQueryHandler(
         if (cached != null)
         {
             logger.LogInformation("Cache hit for {CacheKey}", cacheKey);
+            cacheStats.RecordHit();
             return JsonSerializer.Deserialize<ProductViewModel>(cached);
         }
         
@@ -45,6 +48,8 @@ public class GetProductByIdQueryHandler(
             cancellationToken);
         
         logger.LogInformation("Cache miss for {CacheKey}, value cached", cacheKey);
+        cacheStats.RecordMiss();
+        cacheStats.RecordSet(cacheKey);
         logger.LogInformation("Product {ProductId} retrieved", request.Id);
 
         return viewModel;

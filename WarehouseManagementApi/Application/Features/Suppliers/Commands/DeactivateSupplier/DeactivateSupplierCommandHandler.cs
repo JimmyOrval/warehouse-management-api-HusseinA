@@ -13,6 +13,7 @@ public class DeactivateSupplierCommandHandler(
     ISupplierRepository supplierRepository,
     IMapper mapper,
     IDistributedCache cache,
+    ICacheStatsTracker cacheStats,
     ILogger<DeactivateSupplierCommandHandler> logger)
     : IRequestHandler<DeactivateSupplierCommand, SupplierViewModel>
 {
@@ -30,7 +31,9 @@ public class DeactivateSupplierCommandHandler(
         await supplierRepository.SaveChangesAsync(cancellationToken);
         
         await cache.RemoveAsync(SupplierCacheKeys.ById(supplier.Id), cancellationToken);
+        cacheStats.RecordRemoval(SupplierCacheKeys.ById(supplier.Id));
         await cache.RemoveAsync(SupplierCacheKeys.SuppliersList, cancellationToken);
+        cacheStats.RecordRemoval(SupplierCacheKeys.SuppliersList);
         
         logger.LogInformation("Supplier {SupplierId} deactivated", supplier.Id);
         

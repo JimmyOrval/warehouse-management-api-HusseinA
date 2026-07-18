@@ -15,6 +15,7 @@ public class AssignSupplierToProductCommandHandler(
     ISupplierRepository supplierRepository,
     IMapper mapper,
     IDistributedCache cache,
+    ICacheStatsTracker cacheStats,
     ILogger<AssignSupplierToProductCommandHandler> logger)
     : IRequestHandler<AssignSupplierToProductCommand, ProductViewModel>
 {
@@ -46,7 +47,9 @@ public class AssignSupplierToProductCommandHandler(
         await productRepository.SaveChangesAsync(cancellationToken);
         
         await cache.RemoveAsync(SupplierCacheKeys.ById(supplier.Id), cancellationToken);
+        cacheStats.RecordRemoval(SupplierCacheKeys.ById(supplier.Id));
         await cache.RemoveAsync(SupplierCacheKeys.SuppliersList, cancellationToken);
+        cacheStats.RecordRemoval(SupplierCacheKeys.SuppliersList);
         
         logger.LogInformation("Product {ProductId} assigned to {SupplierId}", request.Id, request.SupplierId);
         

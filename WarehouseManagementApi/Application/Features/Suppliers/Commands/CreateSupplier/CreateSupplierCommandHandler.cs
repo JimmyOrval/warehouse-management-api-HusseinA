@@ -12,6 +12,7 @@ public class CreateSupplierCommandHandler(
     ISupplierRepository supplierRepository,
     IMapper mapper,
     IDistributedCache cache,
+    ICacheStatsTracker cacheStats,
     ILogger<CreateSupplierCommandHandler> logger)
     : IRequestHandler<CreateSupplierCommand, string>
 {
@@ -23,7 +24,9 @@ public class CreateSupplierCommandHandler(
         await supplierRepository.SaveChangesAsync(cancellationToken);
         
         await cache.RemoveAsync(SupplierCacheKeys.ById(supplier.Id), cancellationToken);
+        cacheStats.RecordRemoval(SupplierCacheKeys.ById(supplier.Id));
         await cache.RemoveAsync(SupplierCacheKeys.SuppliersList, cancellationToken);
+        cacheStats.RecordRemoval(SupplierCacheKeys.SuppliersList);
         
         logger.LogInformation("Supplier {SupplierId} created", supplier.Id);
         
