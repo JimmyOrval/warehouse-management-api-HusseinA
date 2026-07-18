@@ -214,11 +214,10 @@ I focused on making the API more reliable and closer to how a real production AP
 
 ## Validation
 
-Validation started happing using custom data annotations on commands/queries instead of validating request data inside handlers.
-
-Custom `GuidStringAttribute` and `QuantityAttribute` were also introduced to validate parameters that are reused by multiple requests.
-
-Business validation that depends on application state (such as checking for object availability or duplicate SKUs) remains inside the application layer.
+- Added FluentValidation to validate commands and queries before they reach their handlers.
+- Implemented a MediatR FluentValidation pipeline behavior to centralize request validation.
+- Validation started happening using commands/queries validators instead of validating request data inside handlers.
+- Business validation that depends on application state (such as checking for object availability or duplicate SKUs) remains inside the application layer.
 
 ## Exception Handling
 
@@ -261,7 +260,7 @@ Two MVC filters were introduced.
 
 ## Async Improvements
 
-Async/await is now used consistently throughout controllers, handlers and repositories.
+Async/await is now used consistently throughout controllers, handlers, and repositories.
 
 `CancellationToken` is passed from controllers through MediatR into handler and repository methods where applicable.
 
@@ -269,7 +268,12 @@ Async/await is now used consistently throughout controllers, handlers and reposi
 
 A generic `Result<T>` type was introduced to demonstrate generic result handling without changing the overall exception-based architecture.
 
-Reflection here was used here to inspect validation attributes applied to request models. A metadata endpoint was added to return example validation information.
+Reflection here was used to inspect validation attributes applied to request models. A metadata endpoint was added to return example validation information.
+
+## Domain Model
+
+- Replaced the product's archive flag with a ProductStatus enum with 3 states as of this session.
+- Updated relevant product business logic and repository queries to use the new status model.
 
 ## Notes
 
