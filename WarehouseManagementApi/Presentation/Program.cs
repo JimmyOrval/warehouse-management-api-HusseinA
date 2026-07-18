@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json.Serialization;
 using Application.Features.Products.Commands.CreateProduct;
 using Application.Features.Suppliers.Commands.CreateSupplier;
@@ -9,6 +10,7 @@ using HealthChecks.UI.Client;
 using Infrastructure;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Presentation.Errors;
@@ -35,7 +37,12 @@ builder.Services.AddControllers(options =>
 .AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.OperationFilter<CultureQueryParameterFilter>();
+});
+
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
@@ -49,6 +56,20 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         
         return new BadRequestObjectResult(response);
     };
+});
+
+var supportedCultures = new[]
+{
+    new CultureInfo("en-US"),
+    new CultureInfo("fr"),
+    new CultureInfo("ar")
+};
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("en-US");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
 });
 
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -108,6 +129,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseRequestLocalization();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
