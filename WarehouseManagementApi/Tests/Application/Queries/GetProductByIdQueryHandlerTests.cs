@@ -20,6 +20,12 @@ public class GetProductByIdQueryHandlerTests
         var mockCache = new Mock<IDistributedCache>();
         var mockCacheStats = new Mock<ICacheStatsTracker>();
         var mockLogger = new Mock<ILogger<GetProductByIdQueryHandler>>();
+        
+        mockCache
+            .Setup(x => x.GetAsync(
+                It.IsAny<string>(), 
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((byte[]?)null); 
 
         repository
             .Setup(r => r.GetByIdAsync(It.IsAny<string>(), CancellationToken.None))

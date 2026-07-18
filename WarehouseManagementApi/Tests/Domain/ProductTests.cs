@@ -1,4 +1,6 @@
-﻿using Domain.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using Domain.Exceptions;
+using Domain.Models;
 
 namespace Tests.Domain;
 
@@ -15,7 +17,7 @@ public class ProductTests
         var product = CreateProduct();
 
         // price cannot become negative
-        Assert.Throws<ArgumentException>(() =>
+        Assert.Throws<ValidationException>(() =>
             product.ChangePrice(price));
     }
     
@@ -26,7 +28,7 @@ public class ProductTests
 
         product.Archive();
 
-        Assert.Throws<InvalidOperationException>(() =>
+        Assert.Throws<BusinessRuleException>(() =>
             product.ChangePrice(500));
     }
     
@@ -42,7 +44,7 @@ public class ProductTests
 
         var product = CreateProduct();
 
-        Assert.Throws<ArgumentException>(() =>
+        Assert.Throws<BusinessRuleException>(() =>
             product.AssignSupplier(supplier));
     }
 
