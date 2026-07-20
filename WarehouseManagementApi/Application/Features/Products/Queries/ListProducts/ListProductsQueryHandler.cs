@@ -20,7 +20,8 @@ public class ListProductsQueryHandler(
 {
     public async Task<IEnumerable<ProductViewModel>> Handle(ListProductsQuery request, CancellationToken cancellationToken)
     {
-        var cacheKey = $"products:list:{request.OnlyAvailable}";
+        // used already-existing ProductCacheKeys
+        var cacheKey = ProductCacheKeys.List(request.OnlyAvailable);
         var cached = await cache.GetStringAsync(cacheKey, cancellationToken);
 
         if (cached != null)
@@ -29,6 +30,9 @@ public class ListProductsQueryHandler(
             cacheStats.RecordHit();
             return JsonSerializer.Deserialize<IEnumerable<ProductViewModel>>(cached)!;
         }
+        
+        logger.LogInformation("Cache miss for {cacheKey}, value cached", cacheKey);
+        cacheStats.RecordMiss();
         
         IEnumerable<Product> products;
         if(request.OnlyAvailable == true)
@@ -51,9 +55,8 @@ public class ListProductsQueryHandler(
                 { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) },
             cancellationToken);
         
-        logger.LogInformation("Cache miss for {cacheKey}, value cached", cacheKey);
-        cacheStats.RecordMiss();
         cacheStats.RecordSet(cacheKey);
+        
         return viewModels;
     }
 }

@@ -19,7 +19,7 @@ public class ListSuppliersQueryHandler(
 {
     public async Task<IEnumerable<SupplierViewModel>> Handle(ListSuppliersQuery request, CancellationToken cancellationToken)
     {
-        var cacheKey = $"suppliers:list";
+        const string cacheKey = SupplierCacheKeys.SuppliersList;
         var cached = await cache.GetStringAsync(cacheKey, cancellationToken);
 
         if (cached != null)
@@ -28,6 +28,9 @@ public class ListSuppliersQueryHandler(
             cacheStats.RecordHit();
             return JsonSerializer.Deserialize<IEnumerable<SupplierViewModel>>(cached)!;
         }
+        
+        logger.LogInformation("Cached miss for {CacheKey}, value cached", cacheKey);
+        cacheStats.RecordMiss();
         
         var suppliers = await supplierRepository.GetAllAsync(cancellationToken);
         
@@ -40,10 +43,9 @@ public class ListSuppliersQueryHandler(
                         { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) },
                     cancellationToken);
         
-        logger.LogInformation("Cached miss for {CacheKey}, value cached", cacheKey);
-        cacheStats.RecordMiss();
         cacheStats.RecordSet(cacheKey);
         logger.LogInformation("All suppliers retrieved");
+        
         return viewModels;
     }
 }

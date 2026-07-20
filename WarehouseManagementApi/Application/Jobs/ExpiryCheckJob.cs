@@ -41,7 +41,7 @@ public class ExpiryCheckJob(
     private async Task ArchiveExpiredProductsAsync(CancellationToken cancellationToken)
     {
         var dateLimit = DateTime.UtcNow.AddDays(-7);
-        var archivableProducts = await productRepository.GetExpiredOlderThanDateAsync(dateLimit, cancellationToken);
+        var archivableProducts = await productRepository.GetExpiredSinceAsync(dateLimit, cancellationToken);
         
         foreach(var product in archivableProducts)
         {

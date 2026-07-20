@@ -20,7 +20,7 @@ public class GetSupplierByIdQueryHandler(
 {
     public async Task<SupplierViewModel> Handle(GetSupplierByIdQuery request, CancellationToken cancellationToken)
     {
-        var cacheKey = $"supplier:{request.Id}";
+        var cacheKey = ProductCacheKeys.ById(request.Id);
         var cached = await cache.GetStringAsync(cacheKey, cancellationToken);
 
         if (cached != null)
@@ -29,6 +29,9 @@ public class GetSupplierByIdQueryHandler(
             cacheStats.RecordHit();
             return JsonSerializer.Deserialize<SupplierViewModel>(cached)!;
         }
+        
+        logger.LogInformation("Cache miss for {CacheKey}, value cached", cacheKey);
+        cacheStats.RecordMiss();
         
         var supplier = await supplierRepository.GetByIdAsync(request.Id, cancellationToken);
 
@@ -47,8 +50,6 @@ public class GetSupplierByIdQueryHandler(
                         { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) },
                     cancellationToken);
         
-        logger.LogInformation("Cache miss for {CacheKey}, value cached", cacheKey);
-        cacheStats.RecordMiss();
         cacheStats.RecordSet(cacheKey);
         logger.LogInformation("Supplier {SupplierId} retrieved", supplier.Id);
 

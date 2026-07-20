@@ -22,8 +22,8 @@ namespace Presentation.Controllers;
 public class ProductsController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetProducts([FromQuery] bool? onlyAvailable = true,
-        CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetProducts(CancellationToken cancellationToken,
+        [FromQuery] bool? onlyAvailable = true)
     {
         return Ok(await mediator.Send(new ListProductsQuery(onlyAvailable),
             cancellationToken));
@@ -31,7 +31,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetProductById([FromRoute] string id,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var product = await mediator.Send(new GetProductByIdQuery(id),
             cancellationToken);
@@ -41,7 +41,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] string? name,
         [FromQuery] string? supplier,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new SearchProductsQuery(name, supplier),
             cancellationToken));
@@ -50,7 +50,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
     [ServiceFilter(typeof(ModelValidationFilter))]
     [HttpPost]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var productId = await mediator.Send(command, cancellationToken);
         
@@ -60,7 +60,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
     [HttpPut("{id}/quantity/{location}")]
     public async Task<IActionResult> UpdateQuantity([FromRoute] string id,
         [FromBody] int quantity, [FromRoute] string location,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new
             UpdateProductQuantityCommand(
@@ -70,7 +70,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
 
     [HttpPut("{id}/price")]
     public async Task<IActionResult> UpdatePrice([FromRoute] string id,
-        [FromBody] decimal newPrice, CancellationToken cancellationToken = default)
+        [FromBody] decimal newPrice, CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new UpdateProductPriceCommand(id, newPrice),
             cancellationToken));
@@ -78,7 +78,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
 
     [HttpPost("{id}/image")]
     public async Task<IActionResult> UploadImage(string id, IFormFile image,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         await using var stream = image.OpenReadStream();
         return Ok(await mediator.Send(new UploadProductImageCommand(
@@ -87,7 +87,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct([FromRoute] string id,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         await mediator.Send(new ArchiveProductCommand(id), cancellationToken);
         return NoContent();
@@ -118,7 +118,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> GetProductsBySupplier(
         [FromQuery] string supplierName,
         [FromQuery] bool isAscending,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new GetProductsBySupplierQuery
             (supplierName, isAscending), cancellationToken));
@@ -126,7 +126,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
 
     [HttpGet("year")]
     public async Task<IActionResult> GroupByExpiryYear(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new GroupByExpiryYearQuery(),
             cancellationToken));
@@ -134,14 +134,14 @@ public class ProductsController(IMediator mediator) : ControllerBase
 
     [HttpGet("year/country")]
     public async Task<IActionResult> GroupByExpiryYearAndSupplierCountry(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new GroupByExpiryYearAndSupplierCountryQuery(),
             cancellationToken));
     }
 
     [HttpGet("count")]
-    public async Task<IActionResult> GetCount(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetCount(CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new GetProductCountQuery(), cancellationToken));
     }
@@ -150,7 +150,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> GetProductsByPage(
         [FromQuery] int pageNumber,
         [FromQuery] int pageSize,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new GetPagedProductsQuery(pageNumber, pageSize),
             cancellationToken));

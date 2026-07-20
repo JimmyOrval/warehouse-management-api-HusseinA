@@ -10,7 +10,7 @@ public class DashboardController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetDashboard(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var result = await mediator.Send(
             new GetDashboardQuery(), cancellationToken);

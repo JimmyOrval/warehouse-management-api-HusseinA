@@ -23,7 +23,7 @@ public class ExpiryCheckJobTests
             .ReturnsAsync([overdueProduct]);
         
         mockRepository
-            .Setup(r => r.GetExpiredOlderThanDateAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetExpiredSinceAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync([overdueProduct]);
 
         var cacheMock = new Mock<IDistributedCache>();
@@ -48,7 +48,7 @@ public class ExpiryCheckJobTests
             .ReturnsAsync([]);
         
         repositoryMock
-            .Setup(r => r.GetExpiredOlderThanDateAsync(It.IsAny<DateTime>(),
+            .Setup(r => r.GetExpiredSinceAsync(It.IsAny<DateTime>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
 

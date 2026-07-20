@@ -7,7 +7,7 @@ namespace Infrastructure.Repositories;
 
 public class ProductRepository(WarehouseDbContext context) : IProductRepository
 {
-    public async Task<List<Product>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<List<Product>> GetAllAsync(CancellationToken cancellationToken)
     {
         return await context.Products
             .Include(p => p.Supplier)
@@ -15,7 +15,7 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<List<Product>> GetAvailableAsync(CancellationToken cancellationToken = default)
+    public async Task<List<Product>> GetAvailableAsync(CancellationToken cancellationToken)
     {
         return await context.Products
             .Include(p => p.Supplier)
@@ -29,7 +29,7 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<Product?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<Product?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         return await context.Products
             .Include(p => p.Supplier)
@@ -38,7 +38,7 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
 
     public async Task<List<Product>> SearchAsync(
         string? name, string? supplier,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         IQueryable<Product> products = context.Products.Include(p => p.Supplier);
 
@@ -67,7 +67,7 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
     }
 
     public async Task<bool> SkuExistsAsync(string sku,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return await context.Products.AnyAsync(p => p.Sku == sku, cancellationToken);
     }
@@ -82,12 +82,15 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
         context.Products.Remove(product);
     }
 
-    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         await context.SaveChangesAsync(cancellationToken);
     }
     
-    public async Task<List<Product>> GetProductsBySupplierAsync(string supplierName, bool isAscending, CancellationToken cancellationToken = default)
+    public async Task<List<Product>> GetProductsBySupplierAsync(
+        string supplierName,
+        bool isAscending,
+        CancellationToken cancellationToken)
     {
         var products = context.Products
             .Include(p => p.Supplier)
@@ -100,7 +103,7 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
     }
     
     public async Task<List<IGrouping<int, Product>>> GroupByExpiryYearAsync(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return await context.Products
             .Include(p => p.Supplier)
@@ -118,13 +121,13 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<int> GetCountAsync(CancellationToken cancellationToken = default)
+    public async Task<int> GetCountAsync(CancellationToken cancellationToken)
     {
         return await context.Products.CountAsync(cancellationToken);
     }
     
     public async Task<int> GetArchivedCountAsync(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return await context.Products
             .CountAsync(
@@ -154,10 +157,11 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
     }
 
     // same as above, but definition and usage differ
-    public async Task<List<Product>> GetExpiredOlderThanDateAsync(DateTime date, CancellationToken cancellationToken)
+    public async Task<List<Product>> GetExpiredSinceAsync(DateTime date, CancellationToken cancellationToken)
     {
         return await context.Products
-            .Where(p => p.Status != ProductStatus.Archived)
+            .Where(p => p.Status != ProductStatus.Archived 
+                        && p.ExpiryDate > date)
             .ToListAsync(cancellationToken);
     }
 

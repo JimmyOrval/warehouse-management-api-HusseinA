@@ -20,7 +20,7 @@ public class GetProductByIdQueryHandler(
 {
     public async Task<ProductViewModel?> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
     {
-        var cacheKey = $"product:{request.Id}";
+        var cacheKey = ProductCacheKeys.ById(request.Id);
         var cached = await cache.GetStringAsync(cacheKey, cancellationToken);
 
         if (cached != null)
@@ -29,6 +29,9 @@ public class GetProductByIdQueryHandler(
             cacheStats.RecordHit();
             return JsonSerializer.Deserialize<ProductViewModel>(cached);
         }
+        
+        logger.LogInformation("Cache miss for {CacheKey}, value cached", cacheKey);
+        cacheStats.RecordMiss();
         
         var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
         
@@ -47,9 +50,8 @@ public class GetProductByIdQueryHandler(
                 { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) },
             cancellationToken);
         
-        logger.LogInformation("Cache miss for {CacheKey}, value cached", cacheKey);
-        cacheStats.RecordMiss();
         cacheStats.RecordSet(cacheKey);
+        
         logger.LogInformation("Product {ProductId} retrieved", request.Id);
 
         return viewModel;
