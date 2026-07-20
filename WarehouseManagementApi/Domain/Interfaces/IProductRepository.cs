@@ -32,11 +32,14 @@ public interface IProductRepository
 
     Task<int> GetCountAsync(CancellationToken cancellationToken);
     
-    Task<int> GetArchivedCountAsync(
-        CancellationToken cancellationToken = default);
+    Task<int> GetArchivedCountAsync(CancellationToken cancellationToken);
     
     Task<List<Product>> GetPagedProductsAsync(
         int pageNumber, int pageSize, CancellationToken cancellationToken);
+
+    Task<List<Product>> GetExpiringOrExpiredAsync(DateTime date, CancellationToken cancellationToken);
+
+    Task<List<Product>> GetExpiredSinceAsync(DateTime date, CancellationToken cancellationToken);
     
     WarehouseItem? GetWarehouseItem(string productId, string location);
                                                                                  

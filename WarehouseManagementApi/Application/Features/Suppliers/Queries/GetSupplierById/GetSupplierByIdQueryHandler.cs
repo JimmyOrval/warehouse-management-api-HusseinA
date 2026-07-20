@@ -1,20 +1,58 @@
-﻿using Application.ViewModels;
+﻿using System.Text.Json;
+using Application.Common;
+using Application.ViewModels;
 using AutoMapper;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Suppliers.Queries.GetSupplierById;
 
-public class GetSupplierByIdQueryHandler(ISupplierRepository supplierRepository, IMapper mapper)
+public class GetSupplierByIdQueryHandler(
+    ISupplierRepository supplierRepository,
+    IMapper mapper,
+    IDistributedCache cache,
+    ICacheStatsTracker cacheStats,
+    ILogger<GetSupplierByIdQueryHandler> logger)
     : IRequestHandler<GetSupplierByIdQuery, SupplierViewModel>
 {
     public async Task<SupplierViewModel> Handle(GetSupplierByIdQuery request, CancellationToken cancellationToken)
     {
-        var supplier = await supplierRepository.GetByIdAsync(request.Id, cancellationToken);
+        var cacheKey = ProductCacheKeys.ById(request.Id);
+        var cached = await cache.GetStringAsync(cacheKey, cancellationToken);
+
+        if (cached != null)
+        {
+            logger.LogInformation("Cache hit for {CacheKey}", cacheKey);
+            cacheStats.RecordHit();
+            return JsonSerializer.Deserialize<SupplierViewModel>(cached)!;
+        }
         
-        return supplier == null
-            ? throw new NotFoundException($"Supplier '{request.Id}' not found")
-            : mapper.Map<SupplierViewModel>(supplier);
+        logger.LogInformation("Cache miss for {CacheKey}, value cached", cacheKey);
+        cacheStats.RecordMiss();
+        
+        var supplier = await supplierRepository.GetByIdAsync(request.Id, cancellationToken);
+
+        if (supplier == null)
+        {
+            logger.LogInformation("Supplier {SupplierId} not found", request.Id);
+            throw new NotFoundException($"Supplier '{request.Id}' not found");
+        }
+        
+        var viewModel = mapper.Map<SupplierViewModel>(supplier);
+        
+        await cache.SetStringAsync(
+                    cacheKey,
+                    JsonSerializer.Serialize(viewModel),
+                    new DistributedCacheEntryOptions
+                        { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) },
+                    cancellationToken);
+        
+        cacheStats.RecordSet(cacheKey);
+        logger.LogInformation("Supplier {SupplierId} retrieved", supplier.Id);
+
+        return viewModel;
     }
 }

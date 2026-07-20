@@ -15,7 +15,7 @@ public class SuppliersController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetSuppliers(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new ListSuppliersQuery(),
             cancellationToken));
@@ -23,7 +23,7 @@ public class SuppliersController(IMediator mediator) : ControllerBase
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetSupplier(string id,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new GetSupplierByIdQuery(id),
             cancellationToken));
@@ -32,7 +32,7 @@ public class SuppliersController(IMediator mediator) : ControllerBase
     [ServiceFilter(typeof(ModelValidationFilter))]
     [HttpPost]
     public async Task<IActionResult> CreateSupplier([FromBody] CreateSupplierCommand command,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var supplierId = await mediator.Send(command, cancellationToken);
         
@@ -41,7 +41,7 @@ public class SuppliersController(IMediator mediator) : ControllerBase
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteSupplier(string id,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new DeactivateSupplierCommand(id),
             cancellationToken));
@@ -51,7 +51,7 @@ public class SuppliersController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> AssignSupplier(
         [FromRoute] string id,
         [FromRoute] string supplierId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new AssignSupplierToProductCommand(id, supplierId),
             cancellationToken));

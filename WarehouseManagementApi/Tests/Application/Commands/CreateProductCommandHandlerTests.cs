@@ -1,8 +1,10 @@
-﻿using Application.Features.Products.Commands.CreateProduct;
-using Application.Mappings;
+﻿using Application.Common;
+using Application.Features.Products.Commands.CreateProduct;
 using AutoMapper;
 using Domain.Interfaces;
 using Domain.Models;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Tests.Application.Commands;
@@ -14,7 +16,13 @@ public class CreateProductCommandHandlerTests
     {
         var repository = new Mock<IProductRepository>();
         
-        var mockMapper = new Mock<IMapper>(); 
+        var mockMapper = new Mock<IMapper>();
+
+        var mockCache = new Mock<IDistributedCache>();
+
+        var mockCacheStats = new Mock<ICacheStatsTracker>();
+
+        var mockLogger = new Mock<ILogger<CreateProductCommandHandler>>();
 
         mockMapper
             .Setup(m => m.Map<Product>(It.IsAny<CreateProductCommand>()))
@@ -36,7 +44,12 @@ public class CreateProductCommandHandlerTests
         repository
             .Setup(r => r.Add(It.IsAny<Product>()));
 
-        var handler = new CreateProductCommandHandler(repository.Object, mockMapper.Object);
+        var handler = new CreateProductCommandHandler(
+            repository.Object,
+            mockMapper.Object,
+            mockCache.Object,
+            mockCacheStats.Object,
+            mockLogger.Object);
 
         var command = new CreateProductCommand
         (

@@ -1,12 +1,20 @@
-﻿using Application.ViewModels;
+﻿using Application.Common;
+using Application.ViewModels;
 using AutoMapper;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Products.Commands.UpdateProductPrice;
 
-public class UpdateProductPriceCommandHandler(IProductRepository productRepository, IMapper mapper)
+public class UpdateProductPriceCommandHandler(
+    IProductRepository productRepository,
+    IMapper mapper,
+    IDistributedCache cache,
+    ICacheStatsTracker cacheStats,
+    ILogger<UpdateProductPriceCommandHandler> logger)
     : IRequestHandler<UpdateProductPriceCommand, ProductViewModel>
 {
     public async Task<ProductViewModel> Handle(UpdateProductPriceCommand request, CancellationToken cancellationToken)
@@ -14,20 +22,29 @@ public class UpdateProductPriceCommandHandler(IProductRepository productReposito
         var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
         
         if (product == null)
+        {
+            logger.LogWarning("Price update failed: product {ProductId} not found", request.Id);
             throw new NotFoundException($"Product '{request.Id}' not found");
+        }
         
-        // keep track of old values
         var oldPrice = product.Price;
-        var oldLastUpdatedAt = product.LastUpdatedAt;
-
-        // update new values
         product.ChangePrice(request.NewPrice);
         
-        // log changes
-        Console.WriteLine("Old price: " + oldPrice + ", Old LastUpdatedAt: " + oldLastUpdatedAt +
-                          ", New Price: " + product.Price + ", New LastUpdatedAt: " + product.LastUpdatedAt);
-        
         await productRepository.SaveChangesAsync(cancellationToken);
+        
+        await cache.RemoveAsync(ProductCacheKeys.ById(product.Id), cancellationToken);
+        cacheStats.RecordRemoval(ProductCacheKeys.ById(product.Id));
+        
+        foreach(var key in ProductCacheKeys.ListVariations)
+        {
+            await cache.RemoveAsync(key, cancellationToken);
+            cacheStats.RecordRemoval(key);
+        }
+        
+        logger.LogInformation(
+            "Product {ProductId} price updated from {OldPrice} to {NewPrice}",
+            product.Id, oldPrice, request.NewPrice);
+        
         return mapper.Map<ProductViewModel>(product);
     }
 }

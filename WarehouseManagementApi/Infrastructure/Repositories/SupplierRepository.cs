@@ -6,12 +6,12 @@ namespace Infrastructure.Repositories;
 
 public class SupplierRepository(WarehouseDbContext context) : ISupplierRepository
 {
-    public async Task<List<Supplier>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<List<Supplier>> GetAllAsync(CancellationToken cancellationToken)
     {
         return await context.Suppliers.ToListAsync(cancellationToken);
     }
 
-    public async Task<Supplier?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<Supplier?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         return await context.Suppliers.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
     }
@@ -27,7 +27,7 @@ public class SupplierRepository(WarehouseDbContext context) : ISupplierRepositor
     }
     
     public async Task<int> GetCountAsync(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         return await context.Suppliers.CountAsync(cancellationToken);
     }

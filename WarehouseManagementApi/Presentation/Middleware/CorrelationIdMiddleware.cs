@@ -1,4 +1,6 @@
-﻿namespace Presentation.Middleware;
+﻿using Serilog.Context;
+
+namespace Presentation.Middleware;
 
 public class CorrelationIdMiddleware(RequestDelegate next)
 {
@@ -15,6 +17,10 @@ public class CorrelationIdMiddleware(RequestDelegate next)
         
         context.TraceIdentifier = correlationId;
         context.Response.Headers.Append(HeaderName, correlationId);
-        await next(context);
+        
+        using(LogContext.PushProperty("CorrelationId", correlationId))
+        {
+            await next(context);
+        }
     }
 }
