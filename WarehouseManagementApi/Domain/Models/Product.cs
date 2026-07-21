@@ -46,7 +46,7 @@ public class Product
     public void Archive()
     {
         if(Status == ProductStatus.Archived)
-            throw new InvalidOperationException("Product already archived");
+            throw new BusinessRuleException("Product already archived");
         
         Status = ProductStatus.Archived;
         LastUpdatedAt = DateTime.UtcNow;

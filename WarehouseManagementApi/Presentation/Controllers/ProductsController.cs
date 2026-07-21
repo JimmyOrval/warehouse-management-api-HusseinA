@@ -12,11 +12,13 @@ using Application.Features.Products.Queries.GroupByExpiryYearAndSupplierCountry;
 using Application.Features.Products.Queries.ListProducts;
 using Application.Features.Products.Queries.SearchProducts;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Filters;
 
 namespace Presentation.Controllers;
 
+[Authorize(Policy = "AuthenticatedUser")]
 [ApiController]
 [Route("api/[controller]")]
 public class ProductsController(IMediator mediator) : ControllerBase
@@ -47,6 +49,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
             cancellationToken));
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [ServiceFilter(typeof(ModelValidationFilter))]
     [HttpPost]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command,
@@ -57,6 +60,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
         return CreatedAtAction(nameof(GetProductById), new { id = productId }, null);
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [HttpPut("{id}/quantity/{location}")]
     public async Task<IActionResult> UpdateQuantity([FromRoute] string id,
         [FromBody] int quantity, [FromRoute] string location,
@@ -68,6 +72,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
             cancellationToken));
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [HttpPut("{id}/price")]
     public async Task<IActionResult> UpdatePrice([FromRoute] string id,
         [FromBody] decimal newPrice, CancellationToken cancellationToken)
@@ -76,6 +81,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
             cancellationToken));
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [HttpPost("{id}/image")]
     public async Task<IActionResult> UploadImage(string id, IFormFile image,
         CancellationToken cancellationToken)
@@ -85,6 +91,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
             id, stream, image.Length, image.FileName), cancellationToken));
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct([FromRoute] string id,
         CancellationToken cancellationToken)
@@ -93,6 +100,8 @@ public class ProductsController(IMediator mediator) : ControllerBase
         return NoContent();
     }
     
+    // made it so anyone can use this
+    [AllowAnonymous]
     [HttpGet("server-time")]
     public IActionResult GetServerTime([FromHeader(Name = "Accept-Language")] string language)
     {

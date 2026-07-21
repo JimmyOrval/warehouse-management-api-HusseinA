@@ -4,11 +4,13 @@ using Application.Features.Suppliers.Commands.DeactivateSupplier;
 using Application.Features.Suppliers.Queries.GetSupplierById;
 using Application.Features.Suppliers.Queries.ListSuppliers;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Filters;
 
 namespace Presentation.Controllers;
 
+[Authorize(Policy = "AuthenticatedUser")]
 [ApiController]
 [Route("api/[controller]")]
 public class SuppliersController(IMediator mediator) : ControllerBase
@@ -29,6 +31,7 @@ public class SuppliersController(IMediator mediator) : ControllerBase
             cancellationToken));
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [ServiceFilter(typeof(ModelValidationFilter))]
     [HttpPost]
     public async Task<IActionResult> CreateSupplier([FromBody] CreateSupplierCommand command,
@@ -39,6 +42,7 @@ public class SuppliersController(IMediator mediator) : ControllerBase
         return CreatedAtAction(nameof(GetSupplier), new { id = supplierId }, null);
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteSupplier(string id,
         CancellationToken cancellationToken)
@@ -47,6 +51,7 @@ public class SuppliersController(IMediator mediator) : ControllerBase
             cancellationToken));
     }
     
+    [Authorize(Policy = "AdminOnly")]
     [HttpPost("{id}/assign-supplier/{supplierId}")]
     public async Task<IActionResult> AssignSupplier(
         [FromRoute] string id,

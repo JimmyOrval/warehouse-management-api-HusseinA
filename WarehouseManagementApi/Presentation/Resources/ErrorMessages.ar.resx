@@ -27,4 +27,10 @@
         <data name="Internal" xml:space="preserve">
       <value>حدث خطأ غير متوقع</value>
     </data>
+    <data name="Unauthorized" xml:space="preserve">
+        <value>المصادقة مطلوبة</value>
+    </data>
+    <data name="Forbidden" xml:space="preserve">
+        <value>ليس لديك إذن لتنفيذ هذا الإجراء</value>
+    </data>
 </root>

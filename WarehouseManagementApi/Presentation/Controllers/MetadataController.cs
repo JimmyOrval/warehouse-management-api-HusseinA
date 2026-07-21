@@ -1,9 +1,11 @@
 ﻿using Application.Features.Products.Commands.CreateProduct;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Reflection;
 
 namespace Presentation.Controllers;
 
+[Authorize(Policy = "AdminOnly")]
 [ApiController]
 [Route("api/[controller]")]
 public class MetadataController : ControllerBase

@@ -1,4 +1,5 @@
-﻿using Domain.Models;
+﻿using Domain.Exceptions;
+using Domain.Models;
 
 namespace Tests.Domain;
 
@@ -18,7 +19,7 @@ public class WarehouseItemTests
 
         // to check if it accepts update to negative value
         // StockOut() subtracts the input
-        Assert.Throws<InvalidOperationException>(() =>
+        Assert.Throws<BusinessRuleException>(() =>
             item.StockOut(10));
     }
 }

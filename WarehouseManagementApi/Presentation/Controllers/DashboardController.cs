@@ -1,9 +1,11 @@
 ﻿using Application.Features.Dashboard.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers;
 
+[Authorize(Policy = "AdminOnly")]
 [ApiController]
 [Route("api/[controller]")]
 public class DashboardController(IMediator mediator) : ControllerBase
