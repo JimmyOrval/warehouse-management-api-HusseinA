@@ -16,14 +16,17 @@ using HealthChecks.UI.Client;
 using Infrastructure;
 using Infrastructure.HealthChecks;
 using Infrastructure.Repositories;
+using Infrastructure.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Minio;
 using Presentation.Errors;
 using Presentation.Filters;
 using Presentation.Middleware;
@@ -178,6 +181,19 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
     ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
 
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationMiddleware>();
+
+builder.Services.Configure<MinIoStorage>(builder.Configuration.GetSection("MinIO"));
+builder.Services.AddSingleton<IMinioClient>(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<MinIoStorage>>().Value;
+    return new MinioClient()
+        .WithEndpoint(options.Endpoint)
+        .WithCredentials(options.AccessKey, options.SecretKey)
+        .WithSSL(options.UseSsl)
+        .Build();
+});
+
+builder.Services.AddScoped<IFileStorageService, MinIoStorageService>();
 
 builder.Services.AddMediatR(cfg =>
 {

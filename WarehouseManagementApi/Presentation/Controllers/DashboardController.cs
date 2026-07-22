@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers;
 
-[Authorize(Policy = "AdminOnly")]
+[Authorize(Policy = "AuthenticatedUser")]
 [ApiController]
 [Route("api/[controller]")]
 public class DashboardController(IMediator mediator) : ControllerBase

@@ -1,6 +1,10 @@
-﻿using Application.Features.Suppliers.Commands.AssignSupplierToProduct;
+﻿using Application.Features.Products.Commands.DeleteProductImage;
+using Application.Features.Suppliers.Commands.AssignSupplierToProduct;
 using Application.Features.Suppliers.Commands.CreateSupplier;
 using Application.Features.Suppliers.Commands.DeactivateSupplier;
+using Application.Features.Suppliers.Commands.DeleteSupplierDocument;
+using Application.Features.Suppliers.Commands.UploadSupplierDocument;
+using Application.Features.Suppliers.Queries.DownloadSupplierDocument;
 using Application.Features.Suppliers.Queries.GetSupplierById;
 using Application.Features.Suppliers.Queries.ListSuppliers;
 using MediatR;
@@ -60,5 +64,32 @@ public class SuppliersController(IMediator mediator) : ControllerBase
     {
         return Ok(await mediator.Send(new AssignSupplierToProductCommand(id, supplierId),
             cancellationToken));
+    }
+    
+    [Authorize(Policy = "AdminOnly")]
+    [HttpPost("{supplierId}/document")]
+    public async Task<IActionResult> UploadDocument([FromRoute] string documentId, IFormFile document,
+        CancellationToken cancellationToken)
+    {
+        await using var stream = document.OpenReadStream();
+        return Ok(await mediator.Send(new UploadSupplierDocumentCommand(
+            documentId, stream, document.Length, document.FileName, document.ContentType), cancellationToken));
+    }
+
+    [HttpGet("document/{documentId}")]
+    public async Task<IActionResult> DownloadDocument(
+        [FromRoute] string documentId,
+        CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(new DownloadSupplierDocumentQuery(documentId), cancellationToken);
+        return File(result.Content, result.ContentType, result.FileName);
+    }
+    
+    [Authorize(Policy = "AdminOnly")]
+    [HttpDelete("document/{documentId}")]
+    public async Task<IActionResult> DeleteDocument([FromRoute] string documentId, CancellationToken cancellationToken)
+    {
+        await mediator.Send(new DeleteSupplierDocumentCommand(documentId), cancellationToken);
+        return NoContent();
     }
 }

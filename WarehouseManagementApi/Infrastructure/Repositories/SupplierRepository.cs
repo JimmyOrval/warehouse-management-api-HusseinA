@@ -32,6 +32,22 @@ public class SupplierRepository(WarehouseDbContext context) : ISupplierRepositor
         return await context.Suppliers.CountAsync(cancellationToken);
     }
 
+    public void AddDocument(SupplierDocument document)
+    {
+        context.SupplierDocuments.Add(document);
+    }
+
+    public void DeleteDocument(SupplierDocument document)
+    {
+        context.SupplierDocuments.Remove(document);
+    }
+
+    public async Task<SupplierDocument?> GetDocumentByIdAsync(string documentId, CancellationToken cancellationToken)
+    {
+        return await context.SupplierDocuments
+            .FirstOrDefaultAsync(d => d.Id == documentId, cancellationToken);
+    }
+
     public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         await context.SaveChangesAsync(cancellationToken);

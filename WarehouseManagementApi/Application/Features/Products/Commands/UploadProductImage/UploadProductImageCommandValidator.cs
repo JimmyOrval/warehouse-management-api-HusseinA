@@ -5,6 +5,10 @@ namespace Application.Features.Products.Commands.UploadProductImage;
 public class UploadProductImageCommandValidator
     : AbstractValidator<UploadProductImageCommand>
 {
+    private static readonly string[] AllowedImageTypes =
+        ["image/jpg", "image/png"];
+    private const long MaxDocumentSize = 2 * 1024 * 1024;
+    
     public UploadProductImageCommandValidator()
     {
         RuleFor(p => p.ProductId)
@@ -26,5 +30,11 @@ public class UploadProductImageCommandValidator
         RuleFor(p => p.FileName)
             .NotEmpty()
             .WithMessage("File name is required");
+        
+        RuleFor(p => p.ContentType)
+            .NotEmpty()
+            .WithMessage("Content type is required")
+            .Must(ct => AllowedImageTypes.Contains(ct))
+            .WithMessage($"Content type must be one of: {string.Join(", ", AllowedImageTypes)}");
     }
 }

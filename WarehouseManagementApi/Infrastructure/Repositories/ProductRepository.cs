@@ -165,6 +165,22 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
             .ToListAsync(cancellationToken);
     }
 
+    public void AddImage(ProductImage image)
+    {
+        context.ProductImages.Add(image);
+    }
+
+    public void DeleteImage(ProductImage image)
+    {
+        context.ProductImages.Remove(image);
+    }
+
+    public async Task<ProductImage?> GetImageByIdAsync(string imageId, CancellationToken cancellationToken)
+    {
+        return await context.ProductImages
+            .FirstOrDefaultAsync(i => i.Id == imageId, cancellationToken);
+    }
+    
     // I will later create a separate WarehouseItem
     // repository for the following methods
     public WarehouseItem? GetWarehouseItem(string productId, string location)

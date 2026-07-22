@@ -13,4 +13,6 @@ public static class ErrorCodes
     public const string Unauthorized = "UNAUTHORIZED";
     
     public const string Forbidden = "FORBIDDEN";
+    
+    public const string Storage = "STORAGE_ERROR";
 }

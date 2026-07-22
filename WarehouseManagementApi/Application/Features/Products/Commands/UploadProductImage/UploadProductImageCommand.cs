@@ -1,5 +1,4 @@
-﻿using Application.ViewModels;
-using MediatR;
+﻿using MediatR;
 
 namespace Application.Features.Products.Commands.UploadProductImage;
 
@@ -7,5 +6,6 @@ public record UploadProductImageCommand(
     string ProductId,
     Stream Image,
     long ImageLength,
-    string FileName)
-    : IRequest<ProductImageViewModel>;
+    string FileName,
+    string ContentType)
+    : IRequest<string>;

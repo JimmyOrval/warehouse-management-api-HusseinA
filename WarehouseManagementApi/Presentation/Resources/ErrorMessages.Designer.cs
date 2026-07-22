@@ -96,6 +96,15 @@ namespace Presentation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A storage error occurred.
+        /// </summary>
+        internal static string Storage {
+            get {
+                return ResourceManager.GetString("Storage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Authentication is required.
         /// </summary>
         internal static string Unauthorized {

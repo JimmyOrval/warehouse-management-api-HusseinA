@@ -41,6 +41,12 @@ public interface IProductRepository
 
     Task<List<Product>> GetExpiredSinceAsync(DateTime date, CancellationToken cancellationToken);
     
+    void AddImage(ProductImage image);
+    
+    void DeleteImage(ProductImage image);
+    
+    Task<ProductImage?> GetImageByIdAsync(string imageId, CancellationToken cancellationToken);
+
     WarehouseItem? GetWarehouseItem(string productId, string location);
                                                                                  
     IEnumerable<WarehouseItem> GetWarehouseItems(string productId);
