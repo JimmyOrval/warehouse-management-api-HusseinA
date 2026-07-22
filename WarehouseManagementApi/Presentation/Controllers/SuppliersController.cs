@@ -68,12 +68,12 @@ public class SuppliersController(IMediator mediator) : ControllerBase
     
     [Authorize(Policy = "AdminOnly")]
     [HttpPost("{supplierId}/document")]
-    public async Task<IActionResult> UploadDocument([FromRoute] string documentId, IFormFile document,
+    public async Task<IActionResult> UploadDocument([FromRoute] string supplierId, IFormFile document,
         CancellationToken cancellationToken)
     {
         await using var stream = document.OpenReadStream();
         return Ok(await mediator.Send(new UploadSupplierDocumentCommand(
-            documentId, stream, document.Length, document.FileName, document.ContentType), cancellationToken));
+            supplierId, stream, document.Length, document.FileName, document.ContentType), cancellationToken));
     }
 
     [HttpGet("document/{documentId}")]
