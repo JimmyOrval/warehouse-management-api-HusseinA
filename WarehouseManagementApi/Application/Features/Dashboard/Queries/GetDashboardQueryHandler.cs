@@ -24,6 +24,6 @@ public class GetDashboardQueryHandler(
         
         logger.LogInformation("Dashboard retrieved");
 
-        return Result<DashboardViewModel>.Success(mapper.Map<DashboardViewModel>(dashboard));
+        return dashboard;
     }
 }

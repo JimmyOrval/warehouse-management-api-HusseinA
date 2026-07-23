@@ -32,9 +32,13 @@ public class WarehouseDbContext(DbContextOptions<WarehouseDbContext> options)
             .WithMany()
             .HasForeignKey(i => i.ProductId);
         
+        builder.Entity<WarehouseItem>()
+            .HasIndex(i => new {i.Location})
+            .IsUnique();
+        
         builder.Entity<StockMovement>()
             .HasOne(m => m.WarehouseItem)
-            .WithMany()
+            .WithMany(i => i.Movements)
             .HasForeignKey(m => m.WarehouseItemId);
         
         builder.Entity<SupplierDocument>()

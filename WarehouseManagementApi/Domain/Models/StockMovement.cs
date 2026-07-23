@@ -9,6 +9,7 @@ public class StockMovement
     public required string Id { get; init; } = Guid.NewGuid().ToString();
     
     [Required(ErrorMessage = "Item ID is required")]
+    [Length(36, 36, ErrorMessage = "Item ID format invalid")]
     public required string WarehouseItemId { get; init; }
     public virtual WarehouseItem? WarehouseItem { get; init; }
     

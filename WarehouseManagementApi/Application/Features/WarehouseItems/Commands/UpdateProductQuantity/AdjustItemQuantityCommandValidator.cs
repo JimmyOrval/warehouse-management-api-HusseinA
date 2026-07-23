@@ -1,13 +1,13 @@
 ﻿using FluentValidation;
 
-namespace Application.Features.WarehouseItems.UpdateProductQuantity;
+namespace Application.Features.WarehouseItems.Commands.UpdateProductQuantity;
 
 public class AdjustItemQuantityCommandValidator
     : AbstractValidator<AdjustItemQuantityCommand>
 {
     public AdjustItemQuantityCommandValidator()
     {
-        RuleFor(p => p.Id)
+        RuleFor(p => p.ItemId)
             .NotEmpty()
             .WithMessage("Product ID is required")
             .Length(36)
@@ -16,9 +16,5 @@ public class AdjustItemQuantityCommandValidator
         RuleFor(q => q.Quantity)
             .NotEmpty()
             .WithMessage("Quantity is required");
-
-        RuleFor(p => p.Location)
-            .NotEmpty()
-            .WithMessage("Location is required");
     }
 }

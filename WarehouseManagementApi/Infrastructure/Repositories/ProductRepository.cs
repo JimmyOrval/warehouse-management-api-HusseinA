@@ -131,7 +131,7 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
     {
         return await context.Products
             .CountAsync(
-                p => p.Status == ProductStatus.Active,
+                p => p.Status == ProductStatus.Archived,
                 cancellationToken);
     }
 
@@ -180,27 +180,15 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
         return await context.ProductImages
             .FirstOrDefaultAsync(i => i.Id == imageId, cancellationToken);
     }
-    
-    // I will later create a separate WarehouseItem
-    // repository for the following methods
-    public WarehouseItem? GetWarehouseItem(string productId, string location)
-    {
-        return context.WarehouseItems.FirstOrDefault(i =>
-            i.ProductId == productId &&
-            EF.Functions.ILike(i.Location, $"{location}%"));
-    }
 
-    public IEnumerable<WarehouseItem> GetWarehouseItems(string productId)
+    public async Task<List<WarehouseItem>> GetProductWarehouseItemsAsync(string productId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
-    }
-
-    public void UpdateWarehouseItem(WarehouseItem warehouseItem)
-    {
-        throw new NotImplementedException();
+        return await context.WarehouseItems
+            .Where(i => i.ProductId == productId)
+            .ToListAsync(cancellationToken);
     }
     
-    public int GetQuantity(string productId)
+    public int GetTotalStockQuantity(string productId)
     {
         return context.WarehouseItems
             .Where(i => i.ProductId == productId)

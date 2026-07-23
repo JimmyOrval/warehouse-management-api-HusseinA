@@ -1,10 +1,9 @@
 ﻿using Application.ViewModels;
 using MediatR;
 
-namespace Application.Features.WarehouseItems.UpdateProductQuantity;
+namespace Application.Features.WarehouseItems.Commands.UpdateProductQuantity;
 
 public record AdjustItemQuantityCommand(
-    string Id,
-    int Quantity,
-    string Location)
+    string ItemId,
+    int Quantity)
     : IRequest<WarehouseItemViewModel>;

@@ -1,4 +1,5 @@
 ﻿using Application.Features.Products.Commands.CreateProduct;
+using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Reflection;
@@ -15,6 +16,6 @@ public class MetadataController : ControllerBase
     {
         return Ok(
             ValidationMetadataHelper
-                .GetValidationMetadata<CreateProductCommand>());
+                .GetValidationMetadata<Product>());
     }
 }
