@@ -1,9 +1,9 @@
 ﻿using Application.ViewModels;
 using MediatR;
 
-namespace Application.Features.Products.Commands.UpdateProductQuantity;
+namespace Application.Features.WarehouseItems.UpdateProductQuantity;
 
-public record UpdateProductQuantityCommand(
+public record AdjustItemQuantityCommand(
     string Id,
     int Quantity,
     string Location)

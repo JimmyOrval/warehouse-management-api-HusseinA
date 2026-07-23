@@ -4,20 +4,20 @@ using AutoMapper;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
-namespace Application.Features.Products.Commands.UpdateProductQuantity;
+namespace Application.Features.WarehouseItems.UpdateProductQuantity;
 
-public class UpdateProductQuantityCommandHandler(
+public class AdjustItemQuantityCommandHandler(
     IProductRepository productRepository,
     IMapper mapper,
     IDistributedCache cache,
     ICacheStatsTracker cacheStats,
-    ILogger<UpdateProductQuantityCommandHandler> logger)
-    : IRequestHandler<UpdateProductQuantityCommand, WarehouseItemViewModel>
+    ILogger<AdjustItemQuantityCommandHandler> logger)
+    : IRequestHandler<AdjustItemQuantityCommand, WarehouseItemViewModel>
 {
-    public async Task<WarehouseItemViewModel> Handle(UpdateProductQuantityCommand request, CancellationToken cancellationToken)
+    public async Task<WarehouseItemViewModel> Handle(AdjustItemQuantityCommand request, CancellationToken cancellationToken)
     {
         var product = await productRepository.GetByIdAsync(request.Id, cancellationToken);
 
@@ -27,7 +27,7 @@ public class UpdateProductQuantityCommandHandler(
             throw new NotFoundException($"Product '{request.Id}' not found");
         }
 
-        var item = productRepository.GetWarehouseItem(request.Id, request.Location);
+        var item = productRepository.GetWarehouseItem(request.Id);
         if (item == null)
         {
             logger.LogWarning("Quantity update failed: warehouse item {ProductId} not found", request.Id);
@@ -39,7 +39,7 @@ public class UpdateProductQuantityCommandHandler(
         item.QuantityInStock = request.Quantity;
         item.LastStockUpdate = DateTime.Now;
         
-        var currentQuantity = productRepository.GetQuantity(request.Id);
+        var currentQuantity = productRepository.GetTotalQuantity(request.Id);
         if (currentQuantity == 0 && currentQuantity < oldQuantity)
         {
             product.SetOutOfStock();

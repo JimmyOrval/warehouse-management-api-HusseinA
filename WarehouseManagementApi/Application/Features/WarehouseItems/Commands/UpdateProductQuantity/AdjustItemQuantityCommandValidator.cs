@@ -1,23 +1,21 @@
 ﻿using FluentValidation;
 
-namespace Application.Features.Products.Commands.UpdateProductQuantity;
+namespace Application.Features.WarehouseItems.UpdateProductQuantity;
 
-public class UpdateProductQuantityCommandValidator
-    : AbstractValidator<UpdateProductQuantityCommand>
+public class AdjustItemQuantityCommandValidator
+    : AbstractValidator<AdjustItemQuantityCommand>
 {
-    public UpdateProductQuantityCommandValidator()
+    public AdjustItemQuantityCommandValidator()
     {
         RuleFor(p => p.Id)
             .NotEmpty()
             .WithMessage("Product ID is required")
             .Length(36)
             .WithMessage("Product ID format invalid");
-        
+
         RuleFor(q => q.Quantity)
             .NotEmpty()
-            .WithMessage("Quantity is required")
-            .GreaterThan(0)
-            .WithMessage("Quantity must be greater than 0");
+            .WithMessage("Quantity is required");
 
         RuleFor(p => p.Location)
             .NotEmpty()
