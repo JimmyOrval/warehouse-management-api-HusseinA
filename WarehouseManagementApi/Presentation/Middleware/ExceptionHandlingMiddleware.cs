@@ -51,6 +51,11 @@ public class ExceptionHandlingMiddleware(
                     ErrorCodes.Validation,
                     "Validation"),
             
+            StorageException =>
+                (StatusCodes.Status502BadGateway,
+                    ErrorCodes.Storage,
+                    "Storage"),
+            
             _ => (StatusCodes.Status500InternalServerError,
                     ErrorCodes.Internal,
                     "Internal")

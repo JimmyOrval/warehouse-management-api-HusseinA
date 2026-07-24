@@ -30,4 +30,13 @@
     <data name="Internal" xml:space="preserve">
         <value>An unexpected error occurred</value>
     </data>
+    <data name="Forbidden" xml:space="preserve">
+        <value>You do not have permission to perform this action</value>
+    </data>
+    <data name="Unauthorized" xml:space="preserve">
+        <value>Authentication is required</value>
+    </data>
+    <data name="Storage" xml:space="preserve">
+        <value>A storage error occurred</value>
+    </data>
 </root>

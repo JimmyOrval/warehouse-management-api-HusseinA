@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Domain.Exceptions;
 
 namespace Domain.Models;
 
@@ -29,9 +30,11 @@ public class WarehouseItem
     public void StockOut(int quantity)
     {
         if(quantity <= 0)
-            throw new InvalidOperationException("Quantity cannot be negative");
+            throw new BusinessRuleException("Quantity cannot be negative");
+        
         if(quantity > QuantityInStock)
-            throw new InvalidOperationException("Quantity insufficient");
+            throw new BusinessRuleException("Quantity insufficient");
+        
         QuantityInStock -= quantity;
         LastStockUpdate = DateTime.UtcNow;
     }

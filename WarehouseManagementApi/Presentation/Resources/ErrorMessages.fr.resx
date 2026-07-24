@@ -23,4 +23,13 @@
     <data name="Validation" xml:space="preserve">
         <value>Les données de la requête sont invalides</value>
     </data>
+    <data name="Unauthorized" xml:space="preserve">
+        <value>Une authentification est requise</value>
+    </data>
+    <data name="Forbidden" xml:space="preserve">
+        <value>Vous n'avez pas l'autorisation d'effectuer cette action.</value>
+    </data>
+    <data name="Storage" xml:space="preserve">
+        <value>Une erreur de stockage s'est produite.</value>
+    </data>
 </root>

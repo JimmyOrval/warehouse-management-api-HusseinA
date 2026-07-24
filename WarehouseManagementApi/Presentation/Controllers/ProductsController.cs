@@ -1,8 +1,10 @@
 ﻿using Application.Features.Products.Commands.ArchiveProduct;
 using Application.Features.Products.Commands.CreateProduct;
+using Application.Features.Products.Commands.DeleteProductImage;
 using Application.Features.Products.Commands.UpdateProductPrice;
 using Application.Features.Products.Commands.UpdateProductQuantity;
 using Application.Features.Products.Commands.UploadProductImage;
+using Application.Features.Products.Queries.DownloadProductImage;
 using Application.Features.Products.Queries.GetPagedProducts;
 using Application.Features.Products.Queries.GetProductById;
 using Application.Features.Products.Queries.GetProductCount;
@@ -12,11 +14,13 @@ using Application.Features.Products.Queries.GroupByExpiryYearAndSupplierCountry;
 using Application.Features.Products.Queries.ListProducts;
 using Application.Features.Products.Queries.SearchProducts;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Filters;
 
 namespace Presentation.Controllers;
 
+[Authorize(Policy = "AuthenticatedUser")]
 [ApiController]
 [Route("api/[controller]")]
 public class ProductsController(IMediator mediator) : ControllerBase
@@ -47,6 +51,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
             cancellationToken));
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [ServiceFilter(typeof(ModelValidationFilter))]
     [HttpPost]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command,
@@ -57,6 +62,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
         return CreatedAtAction(nameof(GetProductById), new { id = productId }, null);
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [HttpPut("{id}/quantity/{location}")]
     public async Task<IActionResult> UpdateQuantity([FromRoute] string id,
         [FromBody] int quantity, [FromRoute] string location,
@@ -68,6 +74,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
             cancellationToken));
     }
 
+    [Authorize(Policy = "AdminOnly")]
     [HttpPut("{id}/price")]
     public async Task<IActionResult> UpdatePrice([FromRoute] string id,
         [FromBody] decimal newPrice, CancellationToken cancellationToken)
@@ -76,15 +83,35 @@ public class ProductsController(IMediator mediator) : ControllerBase
             cancellationToken));
     }
 
-    [HttpPost("{id}/image")]
-    public async Task<IActionResult> UploadImage(string id, IFormFile image,
+    [Authorize(Policy = "AdminOnly")]
+    [HttpPost("{productId}/image")]
+    public async Task<IActionResult> UploadImage([FromRoute] string productId, IFormFile image,
         CancellationToken cancellationToken)
     {
         await using var stream = image.OpenReadStream();
         return Ok(await mediator.Send(new UploadProductImageCommand(
-            id, stream, image.Length, image.FileName), cancellationToken));
+            productId, stream, image.Length, image.FileName, image.ContentType), cancellationToken));
     }
 
+    [HttpGet("image/{imageId}")]
+    public async Task<IActionResult> DownloadImage(
+        [FromRoute] string imageId,
+        CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(new DownloadProductImageQuery(imageId), cancellationToken);
+        return File(result.Content, result.ContentType, result.FileName);
+    }
+
+    [Authorize(Policy = "AdminOnly")]
+    [HttpDelete("image/{imageId}")]
+    public async Task<IActionResult> DeleteImage([FromRoute] string imageId,
+        CancellationToken cancellationToken)
+    {
+        await mediator.Send(new DeleteProductImageCommand(imageId), cancellationToken);
+        return NoContent();
+    }
+
+    [Authorize(Policy = "AdminOnly")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct([FromRoute] string id,
         CancellationToken cancellationToken)
@@ -93,6 +120,8 @@ public class ProductsController(IMediator mediator) : ControllerBase
         return NoContent();
     }
     
+    // made it so anyone can use this
+    [AllowAnonymous]
     [HttpGet("server-time")]
     public IActionResult GetServerTime([FromHeader(Name = "Accept-Language")] string language)
     {

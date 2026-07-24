@@ -14,5 +14,11 @@ public interface ISupplierRepository
     
     Task<int> GetCountAsync(CancellationToken cancellationToken);
     
+    void AddDocument(SupplierDocument document);
+    
+    void DeleteDocument(SupplierDocument document);
+    
+    Task<SupplierDocument?> GetDocumentByIdAsync(string documentId, CancellationToken cancellationToken);
+    
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

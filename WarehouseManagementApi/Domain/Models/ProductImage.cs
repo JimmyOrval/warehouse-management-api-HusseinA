@@ -12,5 +12,10 @@ public class ProductImage
     [Required]
     public required string FileName { get; init; }
     [Required]
-    public required string FilePath { get; init; }
+    public required string ObjectKey { get; init; }
+    [Required]
+    public required string ContentType { get; init; }
+    [Required]
+    public required long Size { get; init; }
+    public DateTime UploadedAt { get; init; } = DateTime.UtcNow;
 }

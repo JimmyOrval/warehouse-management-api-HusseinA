@@ -6,14 +6,14 @@ namespace Tests.Domain;
 public class ProductStatusTests
 {
     [Fact]
-    public void Archive_WhenAlreadyArchived_ThrowsInvalidOperationException()
+    public void Archive_WhenAlreadyArchived_ThrowsBusinessRuleException()
     {
         var product = CreateTestProduct();
         product.Archive();
 
         var act = product.Archive;
 
-        Assert.Throws<InvalidOperationException>(act);
+        Assert.Throws<BusinessRuleException>(act);
     }
 
     [Fact]

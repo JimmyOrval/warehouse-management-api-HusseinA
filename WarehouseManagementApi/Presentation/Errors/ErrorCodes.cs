@@ -9,4 +9,10 @@ public static class ErrorCodes
     public const string BusinessRule = "BUSINESS_RULE";
 
     public const string Internal = "INTERNAL_SERVER_ERROR";
+    
+    public const string Unauthorized = "UNAUTHORIZED";
+    
+    public const string Forbidden = "FORBIDDEN";
+    
+    public const string Storage = "STORAGE_ERROR";
 }
