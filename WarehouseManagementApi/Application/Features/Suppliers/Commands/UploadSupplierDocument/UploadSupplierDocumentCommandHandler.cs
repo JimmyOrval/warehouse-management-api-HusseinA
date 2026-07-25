@@ -1,15 +1,20 @@
 ﻿using AutoMapper;
+using Domain.Events.Contracts;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using Domain.Models;
+using Infrastructure.Storage;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Application.Features.Suppliers.Commands.UploadSupplierDocument;
 
 public class UploadSupplierDocumentCommandHandler(
     ISupplierRepository supplierRepository,
     IFileStorageService fileStorageService,
+    IEventPublisher eventPublisher,
+    IOptions<MinIoStorage> minIoOptions,
     IMapper mapper,
     ILogger<UploadSupplierDocumentCommandHandler> logger)
     : IRequestHandler<UploadSupplierDocumentCommand, string>
@@ -41,6 +46,22 @@ public class UploadSupplierDocumentCommandHandler(
 
         logger.LogInformation("Document uploaded for supplier {SupplierId}, object key {ObjectKey}",
             supplier.Id, uploaded.ObjectKey);
+        
+        await eventPublisher.PublishAsync(new WarehouseFileUploaded
+        {
+            CorrelationId = Guid.NewGuid().ToString(),
+            EventType = "FileUploaded",
+            RelatedEntityId = supplier.Id,
+            RelatedEntityType = "Supplier",
+            Severity = "Info",
+            FileName = uploaded.FileName,
+            FileType = "SupplierDocument",
+            BucketName = minIoOptions.Value.BucketName,
+        }, "file.uploaded", cancellationToken);
+
+        logger.LogInformation(
+            "Published WarehouseFileUploaded for supplier {SupplierId}",
+            supplier.Id);
 
         return document.Id;
     }

@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Application.Features.WarehouseItems.Commands.UpdateProductQuantity;
+namespace Application.Features.WarehouseItems.Commands.AdjustItemQuantity;
 
 public class AdjustItemQuantityCommandValidator
     : AbstractValidator<AdjustItemQuantityCommand>

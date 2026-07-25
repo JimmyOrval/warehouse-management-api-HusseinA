@@ -14,6 +14,7 @@ public class WarehouseItemRepository(WarehouseDbContext context) : IWarehouseIte
     public async Task<WarehouseItem?> GetByIdAsync(string itemId, CancellationToken cancellationToken)
     {
         return await context.WarehouseItems
+            .Include(i => i.Product)
             .FirstOrDefaultAsync(i => i.Id == itemId,
                 cancellationToken);
     }

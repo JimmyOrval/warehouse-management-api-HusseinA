@@ -15,6 +15,7 @@ using Hangfire.PostgreSql;
 using HealthChecks.UI.Client;
 using Infrastructure;
 using Infrastructure.HealthChecks;
+using Infrastructure.Messaging;
 using Infrastructure.Repositories;
 using Infrastructure.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -195,6 +196,9 @@ builder.Services.AddSingleton<IMinioClient>(sp =>
 });
 
 builder.Services.AddScoped<IFileStorageService, MinIoStorageService>();
+
+builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMQ"));
+builder.Services.AddSingleton<IEventPublisher, RabbitMqEventPublisher>();
 
 builder.Services.AddMediatR(cfg =>
 {

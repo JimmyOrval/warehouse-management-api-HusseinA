@@ -1,6 +1,6 @@
-﻿using Application.Features.WarehouseItems.Commands.CreateWarehouseItem;
+﻿using Application.Features.WarehouseItems.Commands.AdjustItemQuantity;
+using Application.Features.WarehouseItems.Commands.CreateWarehouseItem;
 using Application.Features.WarehouseItems.Commands.DeleteWarehouseItem;
-using Application.Features.WarehouseItems.Commands.UpdateProductQuantity;
 using Application.Features.WarehouseItems.Queries.GetItemStockMovements;
 using Application.Features.WarehouseItems.Queries.GetWarehouseItemById;
 using Application.Features.WarehouseItems.Queries.ListWarehouseItems;
