@@ -78,8 +78,8 @@ public class AdjustItemQuantityCommandHandler(
                 RelatedEntityType = "WarehouseItem",
                 Severity = "Warning",
                 ProductName = item.Product?.Name ?? "Unknown product",
-                CurrentQuantity = previousQuantity,
-                MinimumQuantity = item.QuantityInStock
+                CurrentQuantity = item.QuantityInStock,
+                MinimumQuantity = minimumLowQuantity
             }, "stock.low", cancellationToken);
         
             logger.LogInformation("Published StockLowDetected for item {ItemId}. " +

@@ -10,7 +10,6 @@ public class NotificationDbContext(DbContextOptions<NotificationDbContext> optio
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        builder.ApplyConfigurationsFromAssembly(typeof(NotificationDbContext).Assembly);
         base.OnModelCreating(builder);
         
         builder.Entity<Notification>()

@@ -1,4 +1,5 @@
 ﻿using Application.Features.Dashboard.Queries;
+using Application.Features.Notifications.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,5 +27,12 @@ public class DashboardController(IMediator mediator) : ControllerBase
         }
 
         return Ok(result.Value);
+    }
+
+    [Authorize(Policy = "AdminOnly")]
+    [HttpGet("unread-notification-count")]
+    public async Task<IActionResult> GetUnreadNotificationCount(CancellationToken cancellationToken)
+    {
+        return Ok(await mediator.Send(new GetUnreadNotificationCountQuery(), cancellationToken));
     }
 }

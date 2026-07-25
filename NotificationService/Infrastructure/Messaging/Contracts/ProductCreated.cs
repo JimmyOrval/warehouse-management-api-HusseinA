@@ -1,8 +1,6 @@
-﻿using Domain.Models;
+﻿namespace Infrastructure.Messaging.Contracts;
 
-namespace Infrastructure.Messaging.Contracts;
-
-public record ProductCreated : WarehouseEvent
+public record ProductCreated : WarehouseIntegrationEvent
 {
     public required string ProductName { get; init; }
     public required string Sku { get; init; }

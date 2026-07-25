@@ -80,20 +80,49 @@ public class RabbitMqConsumer(
             ExchangeType.Topic,
             durable: true,
             cancellationToken: cancellationToken);
+
+        // we first have separate declaration for dead-letter handling
+        await _channel.ExchangeDeclareAsync(
+            _settings.DeadLetterExchange,
+            ExchangeType.Fanout,
+            durable: true,
+            cancellationToken: cancellationToken);
         
         await _channel.QueueDeclareAsync(
-            _settings.Queue,
+            _settings.DeadLetterQueue,
             durable: true,
             exclusive: false,
             autoDelete: false,
             cancellationToken: cancellationToken);
         
-        foreach(var routingKey in _settings.RoutingKeys)
+        await _channel.QueueBindAsync(
+            _settings.DeadLetterQueue,
+            _settings.DeadLetterExchange,
+            routingKey: "",
+            cancellationToken: cancellationToken);
+
+        // queue here sends failed messages to DLX
+        var queueArgs = new Dictionary<string, object>
+        {
+            { "x-dead-letter-exchange", _settings.DeadLetterExchange }
+        };
+
+        await _channel.QueueDeclareAsync(
+            _settings.Queue,
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: queueArgs!,
+            cancellationToken: cancellationToken);
+
+        foreach (var routingKey in _settings.RoutingKeys)
+        {
             await _channel.QueueBindAsync(
                 _settings.Queue,
                 _settings.Exchange,
                 routingKey,
                 cancellationToken: cancellationToken);
+        }
 
         await _channel.BasicQosAsync(
             0,

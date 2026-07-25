@@ -49,14 +49,14 @@ public class CreateProductCommandHandler(
         await eventPublisher.PublishAsync(new ProductCreated()
         {
             CorrelationId = Guid.NewGuid().ToString(),
-            EventType = "StockAdjusted",
+            EventType = "ProductCreated",
             RelatedEntityId = product.Id,
             RelatedEntityType = "Product",
             Severity = "Info",
             ProductName = product.Name,
             Sku = product.Sku,
             SupplierName = product.Supplier?.Name ?? "Unknown supplier"
-        }, "stock.adjusted", cancellationToken);
+        }, "product.created", cancellationToken);
         
         logger.LogInformation("Published ProductCreated for product {ProductId}.",
             product.Id);

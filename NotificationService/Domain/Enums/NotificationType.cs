@@ -2,7 +2,7 @@
 
 public enum NotificationType
 {
-    StockLow,
+    StockLowDetected,
     FileUploaded,
     StockAdjusted,
     ProductCreated

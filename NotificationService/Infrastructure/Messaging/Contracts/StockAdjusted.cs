@@ -1,8 +1,6 @@
-﻿using Domain.Models;
+﻿namespace Infrastructure.Messaging.Contracts;
 
-namespace Infrastructure.Messaging.Contracts;
-
-public record StockAdjusted : WarehouseEvent
+public record StockAdjusted : WarehouseIntegrationEvent
 {
     public required string ProductName { get; init; }
     public required int PreviousQuantity { get; init; }

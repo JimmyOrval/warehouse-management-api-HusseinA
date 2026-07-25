@@ -3,7 +3,5 @@
 public enum NotificationSeverity
 {
     Info,
-    Warning,
-    Error,
-    Critical
+    Warning
 }

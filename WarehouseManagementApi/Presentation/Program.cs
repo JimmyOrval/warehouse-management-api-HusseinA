@@ -15,6 +15,7 @@ using Hangfire.PostgreSql;
 using HealthChecks.UI.Client;
 using Infrastructure;
 using Infrastructure.HealthChecks;
+using Infrastructure.Http;
 using Infrastructure.Messaging;
 using Infrastructure.Repositories;
 using Infrastructure.Storage;
@@ -218,6 +219,13 @@ builder.Services.AddHangfire(config => config
             PrepareSchemaIfNecessary = true
         }));
 builder.Services.AddHangfireServer();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient<INotificationServiceClient, NotificationServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["NotificationService:BaseUrl"]!);
+    client.Timeout = TimeSpan.FromSeconds(3);
+});
 
 var app = builder.Build();
 

@@ -1,4 +1,5 @@
-﻿using Domain.Interfaces;
+﻿using Domain.Enums;
+using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,6 +30,12 @@ public class NotificationRepository(NotificationDbContext context)
     public void Add(Notification notification)
     {
         context.Notifications.Add(notification);
+    }
+
+    public async Task<int> CountByStatusAsync(NotificationStatus status, CancellationToken cancellationToken)
+    {
+        return await context.Notifications.CountAsync(
+            n => n.Status == status, cancellationToken);
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken)

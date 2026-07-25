@@ -1,6 +1,6 @@
 ﻿using Application.Features.Notifications.Commands.CreateNotificationFromEvent;
+using Domain.Events;
 using Domain.Interfaces;
-using Domain.Models;
 using MediatR;
 
 namespace Application.Common;

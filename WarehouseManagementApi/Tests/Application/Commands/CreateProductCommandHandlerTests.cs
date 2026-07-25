@@ -24,6 +24,8 @@ public class CreateProductCommandHandlerTests
 
         var mockLogger = new Mock<ILogger<CreateProductCommandHandler>>();
 
+        var mockEventPublisher = new Mock<IEventPublisher>();
+        
         mockMapper
             .Setup(m => m.Map<Product>(It.IsAny<CreateProductCommand>()))
             .Returns((CreateProductCommand src) => new Product 
@@ -47,6 +49,7 @@ public class CreateProductCommandHandlerTests
         var handler = new CreateProductCommandHandler(
             repository.Object,
             mockMapper.Object,
+            mockEventPublisher.Object,
             mockCache.Object,
             mockCacheStats.Object,
             mockLogger.Object);
