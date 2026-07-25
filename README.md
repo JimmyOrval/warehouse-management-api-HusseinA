@@ -9,6 +9,7 @@ A Warehouse Management API For Managing Warehouse Products Using An In-memory Li
 - [Session 5](#session-5)
 - [Session 6](#session-6)
 - [Session 7](#session-7)
+- [Session 8](#session-8)
 
 # Session 2
 ## Features
@@ -378,3 +379,64 @@ MinIO was added as the object storage instead of the DB. File bytes are never pe
 - `POST /api/suppliers/{supplierId}/documents` uploads a supplier document (admin-only). Returns the new document ID.
 - `GET /api/suppliers/document/{documentId}` downloads a supplier document (authenticated users).
 - `DELETE /api/suppliers/document/{documentId}` deletes a supplier document (admin-only).
+
+
+# Session 8
+
+## Notification Service and RabbitMQ
+
+A separate Notification Service was added as its own solution, living in the same repository: its own layered architecture (Domain, Application, Infrastructure, Presentation), its own PostgreSQL database, and no shared code or database access with the API. Communication between the two happens only through RabbitMQ events, plus one optional direct HTTP call.
+
+## RabbitMQ
+
+- Added RabbitMQ to the existing `docker-compose.yml`, with MinIO.
+- RabbitMQ management console runs on port `15672`.
+- Exchange: `warehouse.events`.
+- Queue consumed by the Notification Service: `notifications.warehouse-events`.
+- A dead-letter exchange `warehouse.events.dlx` and queue `notifications.warehouse-events.dlq` catch any message that fails to process, instead of losing it silently.
+
+## Warehouse Events
+
+Four event contracts represent warehouse operations/endpoint:
+
+- `StockLowDetected`: when an item's quantity drops below a configured threshold, set in appsettings. Only works when we cross the threshold, not on every update while already below it.
+- `WarehouseFileUploaded`: for both product image and supplier document uploads.
+- `StockAdjusted`: every quantity adjustment.
+- `ProductCreated`: when a new product is created.
+
+Each event carries an event ID, event time, correlation ID, event type, related entity ID/type, and severity, plus its own data.
+
+Routing keys: `stock.low`, `file.uploaded`, `stock.adjusted`, `product.created`.
+
+## Notification Service
+
+- Consumes all four events through a background service `RabbitMqConsumer`.
+- Maps each event to a notification with a type, title, message, severity, and related entity, then persists it in the database.
+- Idempotent: a unique constraint on the event ID prevents duplicate notifications.
+- The consumer retries connecting if RabbitMQ isn't available yet at startup, instead of crashing.
+- Failed messages (bad payloads, mapping errors) are rejected and routed to the dead-letter queue for inspection, instead of being retried forever or dropped.
+
+### Endpoints
+
+- `GET /api/notifications`: lists all notifications.
+- `GET /api/notifications/{id}`: gets a single notification.
+- `GET /api/notifications/search`: lists notifications with optional filtering by type, severity, and status.
+- `PUT /api/notifications/{id}/read`: marks a notification as read.
+- `GET /api/notifications/unread-count`: returns the count of unread notifications.
+
+All endpoints require an authenticated Firebase user (same as the warehouse API). No admin privileges required.
+
+## Bonus: Direct HTTP Communication
+
+The warehouse API exposes `GET /api/dashboard/unread-notifications-count`, which calls the Notification Service directly over HTTP. The caller's token is sent to the Notification Service directly. If the Notification Service is unreachable, the endpoint still returns `200` with `{ count: null, isAvailable: false }` instead of an error.
+
+## Bonus: Dead-Letter Queue
+
+Failed messages land in `notifications.warehouse-events.dlq` instead of being lost, and can be inspected manually through the management console.
+
+## Notes
+
+- Bonus 2 was skipped. Severity is already assigned for each event type at the point of publishing, so making it configurable didn't add much value.
+
+## Setup
+- To run everything locally: start RabbitMQ via `docker compose up -d` from the repo root, then run the Postgres DB and Redis Cache containers from Docker, and finally run the warehouse API and the Notification Service separately. Each opens its own UI.
