@@ -51,7 +51,7 @@ public class NotificationsController(IMediator mediator) : ControllerBase
             new GetNotificationByIdQuery(id), cancellationToken));
     }
 
-    [HttpGet("unread")]
+    [HttpGet("unread-count")]
     public async Task<IActionResult> GetUnreadNotificationCount(CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new GetUnreadNotificationCountQuery(), cancellationToken));

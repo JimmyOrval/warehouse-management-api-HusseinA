@@ -29,7 +29,6 @@ public class DashboardController(IMediator mediator) : ControllerBase
         return Ok(result.Value);
     }
 
-    [Authorize(Policy = "AdminOnly")]
     [HttpGet("unread-notification-count")]
     public async Task<IActionResult> GetUnreadNotificationCount(CancellationToken cancellationToken)
     {
