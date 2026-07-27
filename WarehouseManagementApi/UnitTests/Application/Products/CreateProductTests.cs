@@ -15,7 +15,7 @@ public class CreateProductTests
     {
         var repository = RepositoryMockHelper.MockRepository<IProductRepository>();
         await HandleProductCreation(repository);
-        repository.Verify(repo => repo.Add(It.IsAny<Product>()), Times.Once);
+        repository.Verify(r => r.Add(It.IsAny<Product>()), Times.Once);
     }
 
     [Fact]
@@ -24,7 +24,7 @@ public class CreateProductTests
         var repository = RepositoryMockHelper.MockRepository<IProductRepository>();
         var id = await HandleProductCreation(repository);
         Assert.NotNull(id);
-        repository.Verify(repo => repo.Add(It.Is<Product>(
+        repository.Verify(r => r.Add(It.Is<Product>(
             p => p.CreatedAt != default)));
     }
 
@@ -44,7 +44,7 @@ public class CreateProductTests
         var repository = RepositoryMockHelper.MockRepository<IProductRepository>();
         // set up repository as if a product already exists with this SKU
         repository
-            .Setup(repo => repo.SkuExistsAsync("SKU", It.IsAny<CancellationToken>()))
+            .Setup(r => r.SkuExistsAsync("SKU", It.IsAny<CancellationToken>()))
             .ReturnsAsync(true); 
         
         var mapper = CommonMocksHelper.MockMapper(cfg => 

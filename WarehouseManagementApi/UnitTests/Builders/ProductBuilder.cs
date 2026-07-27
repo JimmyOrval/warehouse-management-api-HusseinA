@@ -5,9 +5,9 @@ namespace Tests.Builders;
 
 public class ProductBuilder
 {
-    private string _id = Guid.NewGuid().ToString();
+    private readonly string _id = Guid.NewGuid().ToString();
 
-    private const string Name = "Product1";
+    private string _name = "Product1";
 
     private string _sku = "PRODUCT-1-SKU";
 
@@ -17,12 +17,14 @@ public class ProductBuilder
     
     private string _supplierId = Guid.NewGuid().ToString();
     
-    private DateTime _expiryDate = DateTime.UtcNow.AddMonths(1);
+    private readonly DateTime _expiryDate = DateTime.UtcNow.AddMonths(1);
+    
+    private string _supplierName = "Supplier";
     
 
-    public ProductBuilder WithId(string id)
+    public ProductBuilder WithName(string name)
     {
-        _id = id;
+        _name = name;
         return this;
     }
 
@@ -38,15 +40,10 @@ public class ProductBuilder
         return this;
     }
 
-    public ProductBuilder WithSupplierId(string supplierId)
+    public ProductBuilder WithSupplier(string supplierId, string supplierName)
     {
         _supplierId = supplierId;
-        return this;
-    }
-
-    public ProductBuilder WithExpiryDate(DateTime expiryDate)
-    {
-        _expiryDate = expiryDate;
+        _supplierName = supplierName;
         return this;
     }
 
@@ -55,12 +52,17 @@ public class ProductBuilder
         return new Product
         {
             Id = _id,
-            Name = Name,
+            Name = _name,
             Sku = _sku,
             Description = Description,
             Price = _price,
             SupplierId = _supplierId,
-            ExpiryDate = _expiryDate
+            ExpiryDate = _expiryDate,
+            Supplier = new Supplier
+            {
+                Id = _supplierId,
+                Name = _supplierName
+            }
         };
     }
 }

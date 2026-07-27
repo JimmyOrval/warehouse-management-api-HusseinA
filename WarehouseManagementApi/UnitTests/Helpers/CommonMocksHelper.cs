@@ -4,6 +4,7 @@ using Domain.Events;
 using Domain.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -53,5 +54,17 @@ public class CommonMocksHelper
     public static ICacheStatsTracker MockCacheStatsTracker()
     {
         return new Mock<ICacheStatsTracker>().Object;
+    }
+
+    public static IConfiguration MockConfiguration()
+    {
+        var config = new Dictionary<string, string>
+        {
+            { "Notifications:MinimumLowQuantity", "20" } 
+        };
+
+        return new ConfigurationBuilder()
+            .AddInMemoryCollection(config!)
+            .Build();
     }
 }
