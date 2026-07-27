@@ -33,4 +33,10 @@
       <ProjectReference Include="..\Presentation\Presentation.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Application\Suppliers\" />
+      <Folder Include="Domain\Products\" />
+      <Folder Include="Domain\Suppliers\" />
+    </ItemGroup>
+
 </Project>
