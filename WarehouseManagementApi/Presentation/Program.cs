@@ -142,7 +142,11 @@ builder.Services.AddHealthChecksUI(setup =>
 Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS",
     builder.Configuration["FirebaseServiceAccountPath"]);
 
-FirebaseApp.Create();
+// so that it doesn't throw errors when testing with mock auth
+if (FirebaseApp.DefaultInstance == null)
+{
+    FirebaseApp.Create();
+}
 
 var firebaseProjectId = builder.Configuration["Firebase:ProjectId"];
 
@@ -267,3 +271,6 @@ app.Run();
 
 // makes sure no logs are lost before shutdown
 Log.CloseAndFlush();
+
+// added for integration tests
+public partial class Program { }
