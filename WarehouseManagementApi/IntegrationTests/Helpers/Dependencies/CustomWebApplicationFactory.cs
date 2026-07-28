@@ -2,11 +2,15 @@
 using Hangfire.MemoryStorage;
 using Infrastructure;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+using Microsoft.Extensions.Logging;
 using Minio;
 using Moq;
 using StackExchange.Redis;
@@ -19,11 +23,21 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        
+        builder.ConfigureLogging(logging =>
+        {
+            logging.ClearProviders();
+            logging.AddConsole();
+        });
 
-        builder.ConfigureServices(services =>
+        builder.ConfigureTestServices(services =>
         {
             // replace read DB with fake one
+            services.RemoveAll<DbContextOptions>();
             services.RemoveAll<DbContextOptions<WarehouseDbContext>>();
+            services.RemoveAll<IDbContextOptionsConfiguration<WarehouseDbContext>>();
+            services.RemoveAll<WarehouseDbContext>();
+            
             services.AddDbContext<WarehouseDbContext>(options =>
                 options.UseInMemoryDatabase("TestDb"));
 

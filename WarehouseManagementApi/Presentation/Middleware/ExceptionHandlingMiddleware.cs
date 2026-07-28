@@ -27,6 +27,11 @@ public class ExceptionHandlingMiddleware(
                 context.Request.Path,
                 context.TraceIdentifier);
 
+            if (context.RequestServices.GetRequiredService<IHostEnvironment>().IsEnvironment("Testing"))
+            {
+                Console.WriteLine($"[DIAGNOSTIC] {exception}");
+            }
+
             await HandleExceptionAsync(context, exception, localizer);
         }
     }

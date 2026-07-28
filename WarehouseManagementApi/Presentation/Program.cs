@@ -122,22 +122,25 @@ builder.Services.AddDbContext<WarehouseDbContext>(options =>
         b => b.MigrationsAssembly("Infrastructure")
     ));
 
-builder.Services.AddHealthChecks()
-    .AddNpgSql(
-        builder.Configuration.GetConnectionString("DefaultConnection")!,
-        name: "postgresql-check",
-        tags: ["db"])
-    .AddCheck<RedisRetryHealthCheck>("Redis", tags: ["cache"]);
-
-builder.Services.AddHealthChecksUI(setup =>
+if(!builder.Environment.IsEnvironment("Testing"))
 {
-    setup.AddHealthCheckEndpoint(
-        "Warehouse API",
-        "/health");
-    
-    setup.SetEvaluationTimeInSeconds(15);
-    setup.MaximumHistoryEntriesPerEndpoint(50);
-}).AddInMemoryStorage();
+    builder.Services.AddHealthChecks()
+        .AddNpgSql(
+            builder.Configuration.GetConnectionString("DefaultConnection")!,
+            name: "postgresql-check",
+            tags: ["db"])
+        .AddCheck<RedisRetryHealthCheck>("Redis", tags: ["cache"]);
+
+    builder.Services.AddHealthChecksUI(setup =>
+    {
+        setup.AddHealthCheckEndpoint(
+            "Warehouse API",
+            "/health");
+
+        setup.SetEvaluationTimeInSeconds(15);
+        setup.MaximumHistoryEntriesPerEndpoint(50);
+    }).AddInMemoryStorage();
+}
 
 Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS",
     builder.Configuration["FirebaseServiceAccountPath"]);
@@ -248,15 +251,18 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseStaticFiles();
-app.MapHealthChecks("/health", new HealthCheckOptions
+if(!builder.Environment.IsEnvironment("Testing"))
 {
-    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-});
-app.MapHealthChecksUI(options =>
-{
-    options.UIPath = "/health-ui";
-    options.ApiPath = "/health-ui-api";
-});
+    app.MapHealthChecks("/health", new HealthCheckOptions
+    {
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    });
+    app.MapHealthChecksUI(options =>
+    {
+        options.UIPath = "/health-ui";
+        options.ApiPath = "/health-ui-api";
+    });
+}
 app.MapControllers();
 
 app.UseHangfireDashboard();

@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace IntegrationTests.Helpers.Dependencies;
@@ -34,7 +35,11 @@ public class FakeAuthHandler(
             new Claim("email", "test-user@email.com"),
             new Claim("role", role)
         };
-        var identity = new ClaimsIdentity(claims, "Test");
+        var identity = new ClaimsIdentity(
+            claims,
+            SchemeName,
+            ClaimTypes.NameIdentifier,
+            "role");
         var principal = new ClaimsPrincipal(identity);
         var ticket = new AuthenticationTicket(principal, "Test");
         return Task.FromResult(AuthenticateResult.Success(ticket));
