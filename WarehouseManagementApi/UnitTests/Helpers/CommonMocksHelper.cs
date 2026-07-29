@@ -67,4 +67,9 @@ public class CommonMocksHelper
             .AddInMemoryCollection(config!)
             .Build();
     }
+
+    public static ICorrelationIdProvider MockCorrelationIdProvider()
+    {
+        return Mock.Of<ICorrelationIdProvider>(p => p.CorrelationId() == "test-correlation-id");
+    }
 }

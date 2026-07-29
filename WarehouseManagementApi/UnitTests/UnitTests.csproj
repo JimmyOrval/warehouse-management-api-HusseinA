@@ -33,9 +33,4 @@
       <ProjectReference Include="..\Presentation\Presentation.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Application\Caching\" />
-      <Folder Include="Application\Commands\" />
-    </ItemGroup>
-
 </Project>

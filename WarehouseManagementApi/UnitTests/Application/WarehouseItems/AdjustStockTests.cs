@@ -30,6 +30,7 @@ public class AdjustStockTests
         return (new AdjustItemQuantityCommandHandler(
             repository.Object,
             CommonMocksHelper.MockEventPublisher(),
+            CommonMocksHelper.MockCorrelationIdProvider(),
             CommonMocksHelper.MockConfiguration(),
             mapper,
             CommonMocksHelper.MockLogger<AdjustItemQuantityCommandHandler>()), item);

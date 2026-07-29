@@ -42,6 +42,7 @@ public class ProductImageUploadTests
             repository.Object,
             mockStorage.Object,
             CommonMocksHelper.MockEventPublisher(),
+            CommonMocksHelper.MockCorrelationIdProvider(),
             Mock.Of<IOptions<MinIoStorage>>(o => o.Value == new MinIoStorage()),
             mapper,
             CommonMocksHelper.MockLogger<UploadProductImageCommandHandler>());
@@ -168,6 +169,7 @@ public class ProductImageUploadTests
             repository.Object,
             mockStorage.Object,
             CommonMocksHelper.MockEventPublisher(),
+            CommonMocksHelper.MockCorrelationIdProvider(),
             Mock.Of<IOptions<MinIoStorage>>(o => o.Value == new MinIoStorage()),
             mapper,
             CommonMocksHelper.MockLogger<UploadProductImageCommandHandler>());

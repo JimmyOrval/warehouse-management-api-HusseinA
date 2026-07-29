@@ -56,6 +56,7 @@ public class CreateProductTests
             repository.Object,
             mapper,
             CommonMocksHelper.MockEventPublisher(),
+            CommonMocksHelper.MockCorrelationIdProvider(),
             CommonMocksHelper.MockDistributedCache(),
             CommonMocksHelper.MockCacheStatsTracker(),
             CommonMocksHelper.MockLogger<CreateProductCommandHandler>());
@@ -86,6 +87,7 @@ public class CreateProductTests
             repository.Object,
             mapper,
             CommonMocksHelper.MockEventPublisher(),
+            CommonMocksHelper.MockCorrelationIdProvider(),
             CommonMocksHelper.MockDistributedCache(),
             CommonMocksHelper.MockCacheStatsTracker(),
             CommonMocksHelper.MockLogger<CreateProductCommandHandler>());
