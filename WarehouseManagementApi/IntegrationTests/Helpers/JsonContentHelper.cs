@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -69,16 +70,17 @@ public static class JsonContentHelper
         // repalce the normal "token" with one that has role claim
         client.DefaultRequestHeaders.Remove("Test-Role");
         client.DefaultRequestHeaders.Add("Test-Role", role);
+
+        if (client.DefaultRequestHeaders.Accept.All(h => h.MediaType != "application/json"))
+        {
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        }
+        
         return client;
     }
 
     public static HttpClient AsAdmin(this HttpClient client)
     {
         return client.AsRole("Admin");
-    }
-
-    public static HttpClient AsUser(this HttpClient client)
-    {
-        return client.AsRole("User");
     }
 }

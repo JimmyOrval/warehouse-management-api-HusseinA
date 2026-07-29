@@ -9,12 +9,6 @@ public class WarehouseItemBuilder
     private const string Location = "Beirut";
     private int _initialQuantity;
 
-    public WarehouseItemBuilder WithId(string id)
-    {
-        _id = id;
-        return this;
-    }
-
     public WarehouseItemBuilder WithProductId(string productId)
     {
         _productId = productId;

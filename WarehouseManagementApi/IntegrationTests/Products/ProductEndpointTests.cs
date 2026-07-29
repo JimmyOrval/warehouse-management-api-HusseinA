@@ -172,6 +172,20 @@ public class ProductEndpointTests(CustomWebApplicationFactory factory) : IAsyncL
         var product = await getResponse.Content.ReadAsAsync<ProductViewModel>();
         product.Price.Should().Be(newPrice);
     }
+    
+    [Fact]
+    public async Task UpdatePrice_WithNegativeValue_Fails()
+    {
+        const decimal newPrice = -1500.00m;
+ 
+        var response = await _client.PutJsonAsync($"/api/products/{_seededProduct.Id}/price", newPrice);
+ 
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+ 
+        var getResponse = await _client.GetAsync($"/api/products/{_seededProduct.Id}", CancellationToken.None);
+        var product = await getResponse.Content.ReadAsAsync<ProductViewModel>();
+        product.Price.Should().NotBe(newPrice);
+    }
  
     [Fact]
     public async Task UpdatePrice_OnArchivedProduct_Fails()
@@ -188,6 +202,14 @@ public class ProductEndpointTests(CustomWebApplicationFactory factory) : IAsyncL
         var response = await _client.DeleteAsync($"/api/products/{_seededProduct.Id}", CancellationToken.None);
  
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+    
+    [Fact]
+    public async Task Delete_ArchivedProduct_Fails()
+    {
+        var response = await _client.DeleteAsync($"/api/products/{_seededArchivedProduct.Id}", CancellationToken.None);
+ 
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
  
     [Fact]

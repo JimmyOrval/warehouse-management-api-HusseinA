@@ -1,6 +1,6 @@
 using System.Net.Http.Headers;
 
-namespace Warehouse.Api.TestUtilities.Helpers;
+namespace IntegrationTests.Helpers;
 
 // when uploading a file, it gets sent in multiple parts
 // usually, ef core merges these parts with IFormFile
@@ -34,7 +34,7 @@ public static class MultipartFormHelper
         string fieldName = "image")
     {
         return CreateFileContent(BuildBytes(JpegHeader, size),
-            fileName, "image/jpeg", fieldName);
+            fileName, "image/jpg", fieldName);
     }
 
     public static MultipartFormDataContent PngImage(
@@ -46,16 +46,7 @@ public static class MultipartFormHelper
             fileName, "image/png", fieldName);
     }
 
-    // these create pdf and txt files
-    public static MultipartFormDataContent PdfDocument(
-        string fileName = "test.pdf",
-        int size = 2048,
-        string fieldName = "image")
-    {
-        return CreateFileContent(BuildBytes(PdfHeader, size),
-            fileName, "application/pdf", fieldName);
-    }
-
+    // creates txt file
     public static MultipartFormDataContent TextDocument(
         string fileName = "test.txt",
         string body = "test txt file",
@@ -81,7 +72,7 @@ public static class MultipartFormHelper
         return CreateFileContent(
             BuildBytes(JpegHeader, 3 * 1024 * 1024),
             fileName,
-            "image/jpeg",
+            "image/jpg",
             fieldName);
     }
 

@@ -27,12 +27,6 @@ public class ProductBuilder
         _sku = sku;
         return this;
     }
-
-    public ProductBuilder WithPrice(decimal price)
-    {
-        _price = price;
-        return this;
-    }
     
     public ProductBuilder WithSupplierId(string supplierId)
     {
