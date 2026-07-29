@@ -14,6 +14,7 @@ public class CreateProductCommandHandler(
     IProductRepository productRepository,
     IMapper mapper,
     IEventPublisher eventPublisher,
+    ICorrelationIdProvider correlationIdProvider,
     IDistributedCache cache,
     ICacheStatsTracker cacheStats,
     ILogger<CreateProductCommandHandler> logger)
@@ -48,7 +49,7 @@ public class CreateProductCommandHandler(
         
         await eventPublisher.PublishAsync(new ProductCreated()
         {
-            CorrelationId = Guid.NewGuid().ToString(),
+            CorrelationId = correlationIdProvider.CorrelationId(),
             EventType = "ProductCreated",
             RelatedEntityId = product.Id,
             RelatedEntityType = "Product",

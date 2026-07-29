@@ -15,7 +15,7 @@ public class UploadSupplierDocumentCommandHandler(
     IFileStorageService fileStorageService,
     IEventPublisher eventPublisher,
     IOptions<MinIoStorage> minIoOptions,
-    IMapper mapper,
+    ICorrelationIdProvider correlationIdProvider,
     ILogger<UploadSupplierDocumentCommandHandler> logger)
     : IRequestHandler<UploadSupplierDocumentCommand, string>
 {
@@ -49,7 +49,7 @@ public class UploadSupplierDocumentCommandHandler(
         
         await eventPublisher.PublishAsync(new WarehouseFileUploaded
         {
-            CorrelationId = Guid.NewGuid().ToString(),
+            CorrelationId = correlationIdProvider.CorrelationId(),
             EventType = "FileUploaded",
             RelatedEntityId = supplier.Id,
             RelatedEntityType = "Supplier",
