@@ -19,9 +19,6 @@ public class FakeAuthHandler(
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        if(Request.Headers.ContainsKey(NoAuthHeader))
-            return Task.FromResult(AuthenticateResult.NoResult());
-        
         var role = Request.Headers.TryGetValue(RoleHeader, out var value)
         // in case user is normal user
             ? value.ToString()

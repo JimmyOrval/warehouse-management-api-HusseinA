@@ -75,24 +75,9 @@ public static class MultipartFormHelper
             "image/jpg",
             fieldName);
     }
-
-    public static MultipartFormDataContent WrongContentType(
-        string fileName = "test.jpg",
-        string fieldName = "image")
-    {
-        return CreateFileContent(BuildBytes(JpegHeader, 1024),
-            fileName, "application/pdf", fieldName);
-    }
     
     private static byte[] BuildBytes(byte[] header, int totalSize)
     {
-        // if we only got the header with no extra data
-        // set the size so we can at least fit the header
-        if (totalSize < header.Length)
-        {
-            totalSize = header.Length;
-        }
-
         // assign first index for the header
         var bytes = new byte[totalSize];
         header.CopyTo(bytes, 0);
