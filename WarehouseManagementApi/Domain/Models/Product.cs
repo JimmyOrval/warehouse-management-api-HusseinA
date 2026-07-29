@@ -75,10 +75,4 @@ public class Product
         Price = newPrice;
         LastUpdatedAt = DateTime.UtcNow;
     }
-
-    public void SetOutOfStock()
-    {
-        Status = ProductStatus.OutOfStock;
-        LastUpdatedAt = DateTime.UtcNow;
-    }
 }

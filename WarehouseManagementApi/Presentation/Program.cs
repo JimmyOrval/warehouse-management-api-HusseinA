@@ -15,6 +15,8 @@ using Hangfire.PostgreSql;
 using HealthChecks.UI.Client;
 using Infrastructure;
 using Infrastructure.HealthChecks;
+using Infrastructure.Http;
+using Infrastructure.Messaging;
 using Infrastructure.Repositories;
 using Infrastructure.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -30,6 +32,7 @@ using Minio;
 using Presentation.Errors;
 using Presentation.Filters;
 using Presentation.Middleware;
+using Presentation.Providers;
 using Serilog;
 using StackExchange.Redis;
 using AuthorizationMiddleware = Presentation.Middleware.AuthorizationMiddleware;
@@ -173,6 +176,7 @@ builder.Services.AddHttpClient("FirebaseAuth", client =>
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
+builder.Services.AddScoped<IWarehouseItemRepository, WarehouseItemRepository>();
 builder.Services.AddScoped<ActionLoggingFilter>();
 builder.Services.AddScoped<ModelValidationFilter>();
 builder.Services.AddScoped<IExpiryCheckJob, ExpiryCheckJob>();
@@ -195,6 +199,9 @@ builder.Services.AddSingleton<IMinioClient>(sp =>
 
 builder.Services.AddScoped<IFileStorageService, MinIoStorageService>();
 
+builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMQ"));
+builder.Services.AddSingleton<IEventPublisher, RabbitMqEventPublisher>();
+
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(CreateProductCommand).Assembly);
@@ -213,6 +220,14 @@ builder.Services.AddHangfire(config => config
             PrepareSchemaIfNecessary = true
         }));
 builder.Services.AddHangfireServer();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICorrelationIdProvider, CorrelationIdProvider>();
+builder.Services.AddHttpClient<INotificationServiceClient, NotificationServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["NotificationService:BaseUrl"]!);
+    client.Timeout = TimeSpan.FromSeconds(3);
+});
 
 var app = builder.Build();
 

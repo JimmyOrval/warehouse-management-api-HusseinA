@@ -14,8 +14,9 @@ public class WarehouseItemTests
             Id = Guid.NewGuid().ToString(),
             ProductId = Guid.NewGuid().ToString(),
             Location = "Beirut",
-            QuantityInStock = 5
         };
+        
+        item.StockIn(5);
 
         // to check if it accepts update to negative value
         // StockOut() subtracts the input

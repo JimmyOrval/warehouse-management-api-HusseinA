@@ -46,12 +46,9 @@ public interface IProductRepository
     void DeleteImage(ProductImage image);
     
     Task<ProductImage?> GetImageByIdAsync(string imageId, CancellationToken cancellationToken);
-
-    WarehouseItem? GetWarehouseItem(string productId, string location);
-                                                                                 
-    IEnumerable<WarehouseItem> GetWarehouseItems(string productId);
-                                                                                 
-    void UpdateWarehouseItem(WarehouseItem warehouseItem);
+    
+    Task<List<WarehouseItem>> GetProductWarehouseItemsAsync(
+        string productId, CancellationToken cancellationToken);
      
-    int GetQuantity(string productId);
+    int GetTotalStockQuantity(string productId);
 }

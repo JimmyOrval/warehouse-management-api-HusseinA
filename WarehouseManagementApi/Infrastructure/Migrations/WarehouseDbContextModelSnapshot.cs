@@ -216,6 +216,9 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Location")
+                        .IsUnique();
+
                     b.HasIndex("ProductId");
 
                     b.ToTable("WarehouseItems");
@@ -246,7 +249,7 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Models.StockMovement", b =>
                 {
                     b.HasOne("Domain.Models.WarehouseItem", "WarehouseItem")
-                        .WithMany()
+                        .WithMany("Movements")
                         .HasForeignKey("WarehouseItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -274,6 +277,11 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Domain.Models.WarehouseItem", b =>
+                {
+                    b.Navigation("Movements");
                 });
 #pragma warning restore 612, 618
         }

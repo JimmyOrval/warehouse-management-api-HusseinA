@@ -1,15 +1,21 @@
 ﻿using AutoMapper;
+using Domain.Events.Contracts;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using Domain.Models;
+using Infrastructure.Storage;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Application.Features.Products.Commands.UploadProductImage;
 
 public class UploadProductImageCommandHandler(
     IProductRepository productRepository,
     IFileStorageService fileStorageService,
+    IEventPublisher eventPublisher,
+    ICorrelationIdProvider correlationIdProvider,
+    IOptions<MinIoStorage> minIoOptions,
     IMapper mapper,
     ILogger<UploadProductImageCommandHandler> logger)
     : IRequestHandler<UploadProductImageCommand, string>
@@ -47,6 +53,22 @@ public class UploadProductImageCommandHandler(
         
         logger.LogInformation("Image uploaded for product {ProductId}, object key {ObjectKey}",
             product.Id, uploaded.ObjectKey);
+        
+        await eventPublisher.PublishAsync(new WarehouseFileUploaded
+        {
+            CorrelationId = correlationIdProvider.CorrelationId(),
+            EventType = "FileUploaded",
+            RelatedEntityId = product.Id,
+            RelatedEntityType = "Product",
+            Severity = "Info",
+            FileName = uploaded.FileName,
+            FileType = "ProductImage",
+            BucketName = minIoOptions.Value.BucketName,
+        }, "file.uploaded", cancellationToken);
+
+        logger.LogInformation(
+            "Published WarehouseFileUploaded for product {ProductId}",
+            product.Id);
         
         return productImage.Id;
     }

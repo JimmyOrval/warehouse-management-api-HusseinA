@@ -2,17 +2,19 @@
 using Application.Features.Products.Commands.CreateProduct;
 using Application.Features.Products.Commands.DeleteProductImage;
 using Application.Features.Products.Commands.UpdateProductPrice;
-using Application.Features.Products.Commands.UpdateProductQuantity;
 using Application.Features.Products.Commands.UploadProductImage;
 using Application.Features.Products.Queries.DownloadProductImage;
 using Application.Features.Products.Queries.GetPagedProducts;
 using Application.Features.Products.Queries.GetProductById;
 using Application.Features.Products.Queries.GetProductCount;
 using Application.Features.Products.Queries.GetProductsBySupplier;
+using Application.Features.Products.Queries.GetProductWarehouseItems;
+using Application.Features.Products.Queries.GetTotalProductQuantity;
 using Application.Features.Products.Queries.GroupByExpiryYear;
 using Application.Features.Products.Queries.GroupByExpiryYearAndSupplierCountry;
 using Application.Features.Products.Queries.ListProducts;
 using Application.Features.Products.Queries.SearchProducts;
+using Application.Features.WarehouseItems.Queries.GetWarehouseItemById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -60,18 +62,6 @@ public class ProductsController(IMediator mediator) : ControllerBase
         var productId = await mediator.Send(command, cancellationToken);
         
         return CreatedAtAction(nameof(GetProductById), new { id = productId }, null);
-    }
-
-    [Authorize(Policy = "AdminOnly")]
-    [HttpPut("{id}/quantity/{location}")]
-    public async Task<IActionResult> UpdateQuantity([FromRoute] string id,
-        [FromBody] int quantity, [FromRoute] string location,
-        CancellationToken cancellationToken)
-    {
-        return Ok(await mediator.Send(new
-            UpdateProductQuantityCommand(
-                id, quantity, location),
-            cancellationToken));
     }
 
     [Authorize(Policy = "AdminOnly")]
@@ -183,5 +173,20 @@ public class ProductsController(IMediator mediator) : ControllerBase
     {
         return Ok(await mediator.Send(new GetPagedProductsQuery(pageNumber, pageSize),
             cancellationToken));
+    }
+
+    [HttpGet("{productId}/items")]
+    public async Task<IActionResult> GetProductWarehouseItems(
+        [FromRoute] string productId,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await mediator.Send(new GetProductWarehouseItemsQuery(productId), cancellationToken));
+    }
+
+    [HttpGet("{productId}/quantity")]
+    public async Task<IActionResult> GetTotalStockQuantity([FromRoute] string productId,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await mediator.Send(new GetTotalProductQuantityQuery(productId), cancellationToken));
     }
 }

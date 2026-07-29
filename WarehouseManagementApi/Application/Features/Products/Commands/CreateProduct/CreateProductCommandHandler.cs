@@ -1,5 +1,6 @@
 ﻿using Application.Common;
 using AutoMapper;
+using Domain.Events.Contracts;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using Domain.Models;
@@ -12,6 +13,8 @@ namespace Application.Features.Products.Commands.CreateProduct;
 public class CreateProductCommandHandler(
     IProductRepository productRepository,
     IMapper mapper,
+    IEventPublisher eventPublisher,
+    ICorrelationIdProvider correlationIdProvider,
     IDistributedCache cache,
     ICacheStatsTracker cacheStats,
     ILogger<CreateProductCommandHandler> logger)
@@ -43,6 +46,21 @@ public class CreateProductCommandHandler(
         }
         
         logger.LogInformation("Product {ProductId} created", product.Id);
+        
+        await eventPublisher.PublishAsync(new ProductCreated()
+        {
+            CorrelationId = correlationIdProvider.CorrelationId(),
+            EventType = "ProductCreated",
+            RelatedEntityId = product.Id,
+            RelatedEntityType = "Product",
+            Severity = "Info",
+            ProductName = product.Name,
+            Sku = product.Sku,
+            SupplierName = product.Supplier?.Name ?? "Unknown supplier"
+        }, "product.created", cancellationToken);
+        
+        logger.LogInformation("Published ProductCreated for product {ProductId}.",
+            product.Id);
         
         return product.Id;
     }
