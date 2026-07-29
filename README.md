@@ -10,6 +10,7 @@ A Warehouse Management API For Managing Warehouse Products Using An In-memory Li
 - [Session 6](#session-6)
 - [Session 7](#session-7)
 - [Session 8](#session-8)
+- [Session 9](#session-9)
 
 # Session 2
 ## Features
@@ -440,3 +441,53 @@ Failed messages land in `notifications.warehouse-events.dlq` instead of being lo
 
 ## Setup
 - To run everything locally: start RabbitMQ via `docker compose up -d` from the repo root, then run the Postgres DB and Redis Cache containers from Docker, and finally run the warehouse API and the Notification Service separately. Each opens its own UI.
+
+
+markdown
+# Session 9
+
+## Testing
+
+Added `UnitTests` and `IntegrationTests` projects to the API's solution.
+
+### Unit Tests
+
+- `Products`: create, search, price updates, and archive, with dependencies mocked via Moq. Quantity tests used for WarehouseItem, as it owns that logic.
+- `Suppliers`: create, deactivate, assign-to-product, including rejecting archived products and missing suppliers.
+- File upload validation logic and the request-logging middleware.
+
+### Integration Tests
+
+- `CustomWebApplicationFactory` runs the real API through the actual `Program.cs`, but every external dependency was faked instead of connecting to real services:
+  - Postgres: EF Core InMemory provider
+  - Redis: `AddDistributedMemoryCache` + a fake `IConnectionMultiplexer`
+  - RabbitMQ: `FakeEventPublisher`
+  - MinIO: in-memory `IFileStorageService`
+  - Firebase: `FakeAuthHandler`, a test authentication scheme reading role claims from a `Test-Role` header instead of validating real tokens
+- One factory instance is shared for all tests `WarehouseApiCollection` so we don't have to run the services for every test, since `Program.cs` starts all services every time the factory is called.
+- Database and distributed cache are both reset before every test, since the in-memory data persists for the entire factory usage, not just for every request.
+
+### Test Utilities
+
+- `Builders`: `ProductBuilder`, `SupplierBuilder`, `WarehouseItemBuilder`: create mock entities, using domain methods like `Archive()`, `Deactivate()`, `StockIn()` instead of calling them in each test.
+- `Helpers/`: `JsonContentHelper` for request/response serialization including the enum string converter, and `MultipartFormHelper` builds multipart file-upload bodies for image endpoints.
+- Used only in the `IntegrationTests` project, since the unit test project doesn't need them.
+
+### Coverage
+
+- Products: CRUD, quantity adjustment, price updates, and archive on delete.
+- Warehouse items: used for quantity adjustment specifically.
+- Suppliers: create, get, deactivate, and assign-to-product.
+- Product image upload: valid jpg/png, oversized files, wrong file type, and uploading to a missing product.
+- Swagger: switched environment temporarily to Testing to use it.
+- Full flow test using every step used by real HTTP calls: create supplier, create product, assign a second supplier, upload image, create warehouse item, adjust quantity, update price, archive, check final values.
+
+## GitHub Action
+
+Added `WarehouseTestsAction.yml`: restores, builds, and runs the full test suite with code coverage, then publishes a summary report.
+
+## Bonus Challenges
+
+1. Code coverage: Application coverage over 80%.
+2. GitHub Actions: create the testing action.
+3. Negative request tests: duplicate SKU, invalid file type and size, zero and over-stock quantity adjustments, and missing/inactive suppliers and products.
