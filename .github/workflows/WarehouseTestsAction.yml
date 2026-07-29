@@ -27,16 +27,11 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore --configuration Release
-    - name: Unit Tests
+    - name: Tests
       run: >
-        dotnet test UnitTests --no-build --configuration Release
+        dotnet test --no-build --configuration Release
         --collect:"XPlat Code Coverage"
-        --results-directory ./coverage/unit
-    - name: Integration Tests
-      run: >
-        dotnet test IntegrationTests --no-build --configuration Release
-        --collect:"XPlat Code Coverage"
-        --results-directory ./coverage/integration
+        --results-directory ./coverage
     - name: Generate coverage report
       uses: danielpalme/ReportGenerator-GitHub-Action@5.3.8
       with:
