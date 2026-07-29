@@ -14,6 +14,7 @@ public class UploadProductImageCommandHandler(
     IProductRepository productRepository,
     IFileStorageService fileStorageService,
     IEventPublisher eventPublisher,
+    ICorrelationIdProvider correlationIdProvider,
     IOptions<MinIoStorage> minIoOptions,
     IMapper mapper,
     ILogger<UploadProductImageCommandHandler> logger)
@@ -55,7 +56,7 @@ public class UploadProductImageCommandHandler(
         
         await eventPublisher.PublishAsync(new WarehouseFileUploaded
         {
-            CorrelationId = Guid.NewGuid().ToString(),
+            CorrelationId = correlationIdProvider.CorrelationId(),
             EventType = "FileUploaded",
             RelatedEntityId = product.Id,
             RelatedEntityType = "Product",

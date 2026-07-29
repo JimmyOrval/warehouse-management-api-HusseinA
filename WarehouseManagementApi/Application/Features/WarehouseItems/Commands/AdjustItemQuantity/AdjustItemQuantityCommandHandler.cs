@@ -13,6 +13,7 @@ namespace Application.Features.WarehouseItems.Commands.AdjustItemQuantity;
 public class AdjustItemQuantityCommandHandler(
     IWarehouseItemRepository warehouseItemRepository,
     IEventPublisher eventPublisher,
+    ICorrelationIdProvider correlationIdProvider,
     IConfiguration configuration,
     IMapper mapper,
     ILogger<AdjustItemQuantityCommandHandler> logger)
@@ -54,7 +55,7 @@ public class AdjustItemQuantityCommandHandler(
 
         await eventPublisher.PublishAsync(new StockAdjusted
         {
-            CorrelationId = Guid.NewGuid().ToString(),
+            CorrelationId = correlationIdProvider.CorrelationId(),
             EventType = "StockAdjusted",
             RelatedEntityId = item.Id,
             RelatedEntityType = "WarehouseItem",
@@ -72,7 +73,7 @@ public class AdjustItemQuantityCommandHandler(
         {
             await eventPublisher.PublishAsync(new StockLowDetected
             {
-                CorrelationId = Guid.NewGuid().ToString(),
+                CorrelationId = correlationIdProvider.CorrelationId(),
                 EventType = "StockLowDetected",
                 RelatedEntityId = item.Id,
                 RelatedEntityType = "WarehouseItem",

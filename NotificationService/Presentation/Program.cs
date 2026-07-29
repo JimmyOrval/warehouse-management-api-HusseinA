@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Application.Common;
 using Application.Features.Notifications.Commands.CreateNotificationFromEvent;
@@ -11,12 +12,15 @@ using FirebaseAdmin;
 using FluentValidation;
 using Infrastructure;
 using Infrastructure.Messaging;
+using Infrastructure.Messaging.Interfaces;
+using Infrastructure.Messaging.RabbitMQ;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Presentation.Consumers;
 using Presentation.Errors;
 using Presentation.Middleware;
 using Serilog;
@@ -120,6 +124,9 @@ builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, Authorizati
 
 builder.Services.Configure<RabbitMqSettings>(
     builder.Configuration.GetSection("RabbitMQ"));
+builder.Services.AddSingleton(new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+builder.Services.AddSingleton<IRabbitMqConnectionManager, RabbitMqConnectionManager>();
+builder.Services.AddScoped<IWarehouseEventManager, WarehouseEventManager>();
 builder.Services.AddHostedService<RabbitMqConsumer>();
 
 builder.Services.AddMediatR(cfg =>

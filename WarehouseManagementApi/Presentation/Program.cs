@@ -32,6 +32,7 @@ using Minio;
 using Presentation.Errors;
 using Presentation.Filters;
 using Presentation.Middleware;
+using Presentation.Providers;
 using Serilog;
 using StackExchange.Redis;
 using AuthorizationMiddleware = Presentation.Middleware.AuthorizationMiddleware;
@@ -221,6 +222,7 @@ builder.Services.AddHangfire(config => config
 builder.Services.AddHangfireServer();
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICorrelationIdProvider, CorrelationIdProvider>();
 builder.Services.AddHttpClient<INotificationServiceClient, NotificationServiceClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["NotificationService:BaseUrl"]!);
