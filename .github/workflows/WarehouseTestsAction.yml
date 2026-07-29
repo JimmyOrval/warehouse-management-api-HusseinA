@@ -1,0 +1,48 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./WarehouseManagementApi
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+    - name: Tests
+      run: >
+        dotnet test --no-build --configuration Release
+        --collect:"XPlat Code Coverage"
+        --results-directory ./coverage
+    - name: Generate coverage report
+      uses: danielpalme/ReportGenerator-GitHub-Action@5.3.8
+      with:
+        reports: 'WarehouseManagementApi/coverage/**/coverage.cobertura.xml'
+        targetdir: 'WarehouseManagementApi/coverage-report'
+        reporttypes: 'Html;TextSummary'
+    - name: Print coverage summary
+      run: cat coverage-report/Summary.txt
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: WarehouseManagementApi/coverage-report
