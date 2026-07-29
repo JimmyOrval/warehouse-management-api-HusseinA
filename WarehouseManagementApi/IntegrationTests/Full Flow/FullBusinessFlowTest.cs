@@ -37,7 +37,8 @@ public class FullBusinessFlowTest(CustomWebApplicationFactory factory)
         // then create product
         var createProductCommand = new CreateProductCommand(
             Name: "Product1",
-            Sku: "PRODUCT-SKU-1",
+            // added generated sku to have unique location for github action
+            Sku: $"PRODUCT-SKU-{Guid.NewGuid()}",
             Description: "Full flow product",
             Price: 100.00m,
             SupplierId: supplierId,
@@ -75,7 +76,9 @@ public class FullBusinessFlowTest(CustomWebApplicationFactory factory)
         imageId.Should().NotBeNullOrWhiteSpace();
 
         // warehouse item is responsible for quantity, so create it to adjust stock
-        var createItemCommand = new CreateWarehouseItemCommand(productId, "Beirut");
+        var createItemCommand = new CreateWarehouseItemCommand(productId, 
+            // added generated location to have unique location for github action
+            $"Beirut-{Guid.NewGuid()}");
         var createItemResponse = await _client.PostJsonAsync("/api/warehouse-items", createItemCommand);
         createItemResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var itemId = (await createItemResponse.Content.ReadAsAsync<CreatedIdResponse>()).Id;
