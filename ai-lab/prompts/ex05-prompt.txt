@@ -1,0 +1,2 @@
+﻿"This is my ProductRepository.cs. I want you to clean it up and enhance its readability.
+Check for any dangerous N+1 query patterns or thread-blocking synchronous wrappers. Don't change behavior"

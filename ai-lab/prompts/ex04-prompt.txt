@@ -1,0 +1,10 @@
+﻿I added my ProductEndpointTests.cs, ProductImageEndpointTests.cs, and FullBusinessFlowTest.cs test files
+
+"Generate deep integration workflows using WebApplicationFactory for these routes:
+- POST /api/products (full product initialization flow)
+- POST /api/products/{id}/image (binary image stream processing)
+- DELETE /api/products/{id} (resource teardown and cascading cleanup rules)
+ 
+I need explicit assertions on response headers/status codes, model property match conditions,
+and persistent server side-effects".
+

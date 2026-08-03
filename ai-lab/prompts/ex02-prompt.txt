@@ -1,0 +1,9 @@
+﻿I uploaded AssignSupplierToProductCommandHandler.cs:
+
+"The lab says archived products can still get assigned to active suppliers,
+find the bug and clearly explain the faulty logic sequence,
+along with the exact line or block it happens in.
+Give me a high-performance C# fix conforming to domain constraints
+also give me a unit test verifying that mapping a supplier to an archived product safely throws an exception"
+
+It asked for GetProductByIdQueryHandler.cs, so I provided it

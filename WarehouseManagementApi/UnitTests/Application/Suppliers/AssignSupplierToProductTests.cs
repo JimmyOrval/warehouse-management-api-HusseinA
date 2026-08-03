@@ -1,8 +1,10 @@
-﻿using Application.Features.Suppliers.Commands.AssignSupplierToProduct;
+﻿using Application.Common;
+using Application.Features.Suppliers.Commands.AssignSupplierToProduct;
 using Application.ViewModels;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using Domain.Models;
+using Microsoft.Extensions.Caching.Distributed;
 using Moq;
 using Tests.Builders;
 using Tests.Helpers;
@@ -115,5 +117,45 @@ public class AssignSupplierToProductTests
                     product.Id, Guid.NewGuid().ToString()),
                 CancellationToken.None)
         );
+    }
+    
+    // the following were added by AI for session 10:
+ 
+    [Fact]
+    public async Task Assigning_Supplier_Invalidates_Product_Cache()
+    {
+        var product = new ProductBuilder().Build();
+        var supplier = new SupplierBuilder().Build();
+ 
+        var productRepository = RepositoryMockHelper.MockRepository<IProductRepository>();
+        productRepository.Setup(r => r.GetByIdAsync(product.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(product);
+ 
+        var supplierRepository = RepositoryMockHelper.MockRepository<ISupplierRepository>();
+        supplierRepository.Setup(r => r.GetByIdAsync(supplier.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(supplier);
+ 
+        var mapper = CommonMocksHelper.MockMapper(cfg =>
+        {
+            cfg.CreateMap<Product, ProductViewModel>();
+        });
+ 
+        var cache = new Mock<IDistributedCache>();
+ 
+        var handler = new AssignSupplierToProductCommandHandler(
+            productRepository.Object,
+            supplierRepository.Object,
+            mapper,
+            cache.Object,
+            CommonMocksHelper.MockCacheStatsTracker(),
+            CommonMocksHelper.MockLogger<AssignSupplierToProductCommandHandler>());
+ 
+        await handler.Handle(
+            new AssignSupplierToProductCommand(product.Id, supplier.Id),
+            CancellationToken.None);
+ 
+        cache.Verify(c => c.RemoveAsync(
+            ProductCacheKeys.ById(product.Id), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 }

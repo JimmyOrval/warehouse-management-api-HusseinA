@@ -1,0 +1,114 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Presentation.Middleware;
+
+namespace Tests.Presentation.Middleware;
+
+public class SlowRequestLoggingMiddlewareTests
+{
+    private static DefaultHttpContext CreateContext(string method, string path, int statusCode)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Method = method;
+        context.Request.Path = path;
+        context.Response.StatusCode = statusCode;
+        return context;
+    }
+ 
+    // Verifying ILogger calls needs this exact shape since Log<T> is the real
+    // method underneath the LogWarning/LogInformation extension methods.
+    private static void VerifyWarningLogged(Mock<ILogger<SlowRequestLoggingMiddleware>> logger, Times times)
+    {
+        logger.Verify(l => l.Log(
+            LogLevel.Warning,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((state, type) => true),
+            It.IsAny<Exception?>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            times);
+    }
+ 
+    // ---------- positive ----------
+ 
+    [Fact]
+    public async Task Fast_Request_Does_Not_Log_Warning()
+    {
+        var logger = new Mock<ILogger<SlowRequestLoggingMiddleware>>();
+        var middleware = new SlowRequestLoggingMiddleware(_ => Task.CompletedTask, logger.Object);
+ 
+        await middleware.Invoke(CreateContext("GET", "/api/products", 200));
+ 
+        VerifyWarningLogged(logger, Times.Never());
+    }
+ 
+    [Fact]
+    public async Task Slow_Request_Logs_Warning()
+    {
+        var logger = new Mock<ILogger<SlowRequestLoggingMiddleware>>();
+        var middleware = new SlowRequestLoggingMiddleware(
+            _ => Task.Delay(600), logger.Object);
+ 
+        await middleware.Invoke(CreateContext("GET", "/api/products", 200));
+ 
+        VerifyWarningLogged(logger, Times.Once());
+    }
+ 
+    // ---------- negative ----------
+ 
+    [Fact]
+    public async Task Exception_From_Next_Propagates_And_Is_Not_Swallowed()
+    {
+        var logger = new Mock<ILogger<SlowRequestLoggingMiddleware>>();
+        var middleware = new SlowRequestLoggingMiddleware(
+            _ => throw new InvalidOperationException("downstream failure"),
+            logger.Object);
+ 
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            middleware.Invoke(CreateContext("GET", "/api/products", 200)));
+    }
+ 
+    [Fact]
+    public async Task Slow_Request_That_Then_Throws_Is_Not_Logged_As_Slow()
+    {
+        // worth knowing about rather than assuming: if `next` is slow AND
+        // throws, the code never reaches the elapsed-time check at all, so a
+        // genuinely slow request that fails never gets flagged as slow. This
+        // might be worth changing (e.g. try/finally) depending on whether you
+        // want slow failing requests surfaced too - flagging it, not fixing it
+        // unprompted since it's a behavior decision, not an obvious bug.
+        var logger = new Mock<ILogger<SlowRequestLoggingMiddleware>>();
+        var middleware = new SlowRequestLoggingMiddleware(
+            async _ =>
+            {
+                await Task.Delay(600);
+                throw new InvalidOperationException("slow then failed");
+            },
+            logger.Object);
+ 
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            middleware.Invoke(CreateContext("GET", "/api/products", 200)));
+ 
+        VerifyWarningLogged(logger, Times.Never());
+    }
+ 
+    // ---------- edge cases ----------
+    // NOTE: no test for the exact 500ms boundary - Stopwatch is instantiated
+    // directly inside the middleware with no seam to inject a fake clock, so
+    // there's no deterministic way to land on exactly 500ms in a test. Real
+    // delays always overshoot by an unpredictable scheduler-dependent amount.
+    // This is a testability gap in the middleware itself, not something a
+    // better test can work around.
+ 
+    [Fact]
+    public async Task Very_Long_Request_Path_Does_Not_Break_Logging()
+    {
+        var longPath = "/api/products/" + new string('a', 2000);
+        var logger = new Mock<ILogger<SlowRequestLoggingMiddleware>>();
+        var middleware = new SlowRequestLoggingMiddleware(_ => Task.Delay(600), logger.Object);
+ 
+        await middleware.Invoke(CreateContext("GET", longPath, 200));
+ 
+        VerifyWarningLogged(logger, Times.Once());
+    }
+}

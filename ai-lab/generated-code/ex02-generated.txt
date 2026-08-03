@@ -1,0 +1,118 @@
+﻿// FIRST ATTEMPT - based on lab's literal description ("archived products can be
+// mapped to active suppliers"). Turned out this check already existed in
+// Product.AssignSupplier() - this fix would have been a pointless duplicate.
+// Kept here as an example of blindly trusting a bug description without
+// checking the actual code first.
+
+public void AssignSupplier(Supplier supplier)
+{
+    if (Status == ProductStatus.Archived)
+        throw new BusinessRuleException("Cannot assign supplier to an archived product");
+
+    if(!supplier.IsActive)
+        throw new BusinessRuleException("Supplier is not active");
+
+    if(SupplierId == supplier.Id)
+        throw new BusinessRuleException("Supplier is already assigned");
+
+    SupplierId = supplier.Id;
+    LastUpdatedAt = DateTime.UtcNow;
+}
+
+// -----------------------------------------------------------------
+// SECOND ATTEMPT - after actually reading AssignSupplierToProductCommandHandler
+// and GetProductByIdQueryHandler side by side. This is the real bug.
+
+public async Task<ProductViewModel> Handle(AssignSupplierToProductCommand request, CancellationToken cancellationToken)
+{
+    // ... unchanged up to product.AssignSupplier(supplier) and SaveChangesAsync ...
+
+    // only supplier caches were being cleared - product cache was never touched,
+    // so GetProductById can serve a stale SupplierId for up to 5 minutes after
+    // a successful assignment
+    await cache.RemoveAsync(ProductCacheKeys.ById(product.Id), cancellationToken);
+    cacheStats.RecordRemoval(ProductCacheKeys.ById(product.Id));
+
+    await cache.RemoveAsync(SupplierCacheKeys.ById(supplier.Id), cancellationToken);
+    cacheStats.RecordRemoval(SupplierCacheKeys.ById(supplier.Id));
+    await cache.RemoveAsync(SupplierCacheKeys.SuppliersList, cancellationToken);
+    cacheStats.RecordRemoval(SupplierCacheKeys.SuppliersList);
+
+    // ...
+}
+
+public class AssignSupplierToProductTests
+{
+    [Fact]
+    public async Task Assigning_Supplier_To_Archived_Product_Throws()
+    {
+        // this already worked before this exercise - Product.AssignSupplier()
+        // doesn't actually check archived status directly, but the caller
+        // (this handler) checks product.Status before calling it. Covering it
+        // here since nothing at the handler level tested it yet.
+        var product = new ProductBuilder().Archived().Build();
+        var supplier = new SupplierBuilder().Build();
+ 
+        var productRepository = RepositoryMockHelper.MockRepository<IProductRepository>();
+        productRepository.Setup(r => r.GetByIdAsync(product.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(product);
+ 
+        var supplierRepository = RepositoryMockHelper.MockRepository<ISupplierRepository>();
+        supplierRepository.Setup(r => r.GetByIdAsync(supplier.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(supplier);
+ 
+        var mapper = CommonMocksHelper.MockMapper(cfg => { });
+ 
+        var handler = new AssignSupplierToProductCommandHandler(
+            productRepository.Object,
+            supplierRepository.Object,
+            mapper,
+            CommonMocksHelper.MockDistributedCache(),
+            CommonMocksHelper.MockCacheStatsTracker(),
+            CommonMocksHelper.MockLogger<AssignSupplierToProductCommandHandler>());
+ 
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            handler.Handle(new AssignSupplierToProductCommand(product.Id, supplier.Id),
+                CancellationToken.None));
+    }
+ 
+    [Fact]
+    public async Task Assigning_Supplier_Invalidates_Product_Cache()
+    {
+        // the actual bug: product cache wasn't being cleared, so GetProductById
+        // could keep returning the old SupplierId for up to 5 minutes
+        var product = new ProductBuilder().Build();
+        var supplier = new SupplierBuilder().Build();
+ 
+        var productRepository = RepositoryMockHelper.MockRepository<IProductRepository>();
+        productRepository.Setup(r => r.GetByIdAsync(product.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(product);
+ 
+        var supplierRepository = RepositoryMockHelper.MockRepository<ISupplierRepository>();
+        supplierRepository.Setup(r => r.GetByIdAsync(supplier.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(supplier);
+ 
+        var mapper = CommonMocksHelper.MockMapper(cfg =>
+        {
+            cfg.CreateMap<Domain.Models.Product, Application.ViewModels.ProductViewModel>();
+        });
+ 
+        var cache = new Mock<IDistributedCache>();
+ 
+        var handler = new AssignSupplierToProductCommandHandler(
+            productRepository.Object,
+            supplierRepository.Object,
+            mapper,
+            cache.Object,
+            CommonMocksHelper.MockCacheStatsTracker(),
+            CommonMocksHelper.MockLogger<AssignSupplierToProductCommandHandler>());
+ 
+        await handler.Handle(
+            new AssignSupplierToProductCommand(product.Id, supplier.Id),
+            CancellationToken.None);
+ 
+        cache.Verify(c => c.RemoveAsync(
+            ProductCacheKeys.ById(product.Id), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+}

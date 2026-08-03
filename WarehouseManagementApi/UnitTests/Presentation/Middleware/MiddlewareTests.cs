@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Presentation.Middleware;
 
-namespace Tests.Presentation;
+namespace Tests.Presentation.Middleware;
 
 public class MiddlewareTests
 {

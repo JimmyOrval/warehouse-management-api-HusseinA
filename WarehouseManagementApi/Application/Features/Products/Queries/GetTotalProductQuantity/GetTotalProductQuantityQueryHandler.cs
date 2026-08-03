@@ -19,7 +19,7 @@ public class GetTotalProductQuantityQueryHandler(
             throw new NotFoundException($"Product {request.ProductId} not found");
         }
         
-        var quantity = productRepository.GetTotalStockQuantity(request.ProductId);
+        var quantity = await productRepository.GetTotalStockQuantityAsync(request.ProductId, cancellationToken);
         return quantity;
     }
 }

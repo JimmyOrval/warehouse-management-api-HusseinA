@@ -51,6 +51,13 @@ public class CommonMocksHelper
         return NullLogger<T>.Instance;
     }
 
+    // mock for AI-generated test
+    public static Mock<ILogger<T>> MockLoggerMiddleware<T>()
+    {
+        var logger = new Mock<ILogger<T>>(MockBehavior.Loose);
+        return logger;
+    }
+
     public static ICacheStatsTracker MockCacheStatsTracker()
     {
         return new Mock<ICacheStatsTracker>().Object;

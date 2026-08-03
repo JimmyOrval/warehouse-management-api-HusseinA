@@ -1,0 +1,4 @@
+﻿For this exercise, I used Rider's built-in AI to read all the project
+
+"Generate api docs covering all endpoints. README style overview, endpoint summaries, request
+and response examples, and architecture notes."

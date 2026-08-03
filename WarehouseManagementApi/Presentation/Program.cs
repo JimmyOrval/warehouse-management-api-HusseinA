@@ -184,6 +184,7 @@ builder.Services.AddHttpClient("FirebaseAuth", client =>
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IWarehouseItemRepository, WarehouseItemRepository>();
+builder.Services.AddScoped<IShipmentRepository, ShipmentRepository>();
 builder.Services.AddScoped<ActionLoggingFilter>();
 builder.Services.AddScoped<ModelValidationFilter>();
 builder.Services.AddScoped<IExpiryCheckJob, ExpiryCheckJob>();

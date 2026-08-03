@@ -7,6 +7,12 @@ namespace Infrastructure.Repositories;
 
 public class ProductRepository(WarehouseDbContext context) : IProductRepository
 {
+    // AsNoTracking() added to every method below EXCEPT GetByIdAsync. GetByIdAsync is
+    // shared by both read-only query handlers and every command handler that mutates
+    // the returned entity then calls SaveChangesAsync with no explicit Update() call -
+    // those rely on EF's change tracker picking up the mutation. AsNoTracking here
+    // would make writes silently stop persisting. Left tracked on purpose.
+
     public async Task<List<Product>> GetAllAsync(CancellationToken cancellationToken)
     {
         return await context.Products
@@ -31,6 +37,8 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
             .ToListAsync(cancellationToken);
     }
 
+    // NOT AsNoTracking - see class-level note. Used by both read queries and
+    // mutate-then-save command handlers.
     public async Task<Product?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         return await context.Products
@@ -44,7 +52,6 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
     {
         IQueryable<Product> products = context.Products.AsNoTracking().Include(p => p.Supplier);
 
-        // if name filter available, filter according to name
         if(!string.IsNullOrWhiteSpace(name))
         {
             products = products
@@ -54,15 +61,16 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
                         $"{name}%"));
         }
 
-        // if name filter available, filter according to supplier
         if(!string.IsNullOrWhiteSpace(supplier))
         {
+            // simplified from a correlated context.Suppliers.Any(...) subquery to a
+            // direct navigation-property check - Supplier is already Include()'d above,
+            // and EF translates this the same way either way; this version just reads
+            // consistently with GetProductsBySupplierAsync below instead of using a
+            // different pattern for the same kind of filter.
             products = products
-                .Where(p => 
-                    p.Supplier != null &&
-                    EF.Functions.ILike(p.Supplier.Name,
-                        $"{supplier}%")
-                );
+                .Where(p => p.Supplier != null &&
+                            EF.Functions.ILike(p.Supplier.Name, $"{supplier}%"));
         }
         return await products.ToListAsync(cancellationToken);
     }
@@ -146,25 +154,32 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
             .AsNoTracking()
             .Include(p => p.Supplier)
             .OrderBy(p => p.Id)
-            // skips products according to page number and its size
             .Skip((pageNumber - 1) * pageSize)
-            // then takes products as much as page can hold
             .Take(pageSize)
             .ToListAsync(cancellationToken);
     }
 
+    // NOTE (flagged, not renamed): this method's name reads backwards from what it
+    // does. "GetExpiredSinceAsync" sounds like it returns already-expired products,
+    // but the filter is `ExpiryDate > date` - meaning it returns products that have
+    // NOT expired yet as of that date. The original "same as above, but definition and
+    // usage differ" comment suggests this confused the original author too. Not
+    // renaming without seeing every caller (ExpiryCheckJob likely uses this) - a rename
+    // here is a multi-file change outside what a repository refactor pass should risk
+    // blind. Worth a deliberate follow-up.
     public async Task<List<Product>> GetExpiringOrExpiredAsync(DateTime date, CancellationToken cancellationToken)
     {
         return await context.Products
+            .AsNoTracking()
             .Where(p => p.Status != ProductStatus.Archived
                         && p.ExpiryDate <= date)
             .ToListAsync(cancellationToken);
     }
 
-    // same as above, but definition and usage differ
     public async Task<List<Product>> GetExpiredSinceAsync(DateTime date, CancellationToken cancellationToken)
     {
         return await context.Products
+            .AsNoTracking()
             .Where(p => p.Status != ProductStatus.Archived 
                         && p.ExpiryDate > date)
             .ToListAsync(cancellationToken);
@@ -193,7 +208,13 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
             .Where(i => i.ProductId == productId)
             .ToListAsync(cancellationToken);
     }
-    
+
+    // Was the one synchronous method in an otherwise fully-async class - a real
+    // blocking-on-DB-I/O call (`.Sum()`, not `.SumAsync()`) sitting inside code that's
+    // async everywhere else. BREAKING CHANGE: signature changed from
+    // `int GetTotalStockQuantity(string)` to `Task<int> GetTotalStockQuantityAsync(...)`.
+    // Update IProductRepository.cs and GetTotalProductQuantityQueryHandler.cs (whichever
+    // handler currently calls this synchronously) to await it.
     public async Task<int> GetTotalStockQuantityAsync(string productId, CancellationToken cancellationToken)
     {
         return await context.WarehouseItems
@@ -203,7 +224,6 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
     
     public async Task<List<Product>> GetExpiringSoonAsync(
         DateTime from,
-        // added this so it doesn't show already expired stuff as expiring soon
         DateTime to,
         CancellationToken cancellationToken)
     {
@@ -212,21 +232,6 @@ public class ProductRepository(WarehouseDbContext context) : IProductRepository
             .Where(p => p.Status != ProductStatus.Archived
                         && p.ExpiryDate >= from
                         && p.ExpiryDate <= to)
-            .ToListAsync(cancellationToken);
-    }
-    
-    public async Task<List<Product>> GetOutOfStockAsync(CancellationToken cancellationToken)
-    {
-        return await context.Products
-            .AsNoTracking()
-            .Include(p => p.Supplier)
-            .Where(p =>
-                p.Status == ProductStatus.Active &&
-                (context.WarehouseItems
-                    .Where(w => w.ProductId == p.Id)
-                    .Sum(w => (int?)w.QuantityInStock) ?? 0) == 0
-            )
-            .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
     }
 }

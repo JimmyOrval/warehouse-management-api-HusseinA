@@ -4,6 +4,8 @@ using Application.Features.Products.Commands.DeleteProductImage;
 using Application.Features.Products.Commands.UpdateProductPrice;
 using Application.Features.Products.Commands.UploadProductImage;
 using Application.Features.Products.Queries.DownloadProductImage;
+using Application.Features.Products.Queries.ExpiringSoonProducts;
+using Application.Features.Products.Queries.GetOutOfStockProducts;
 using Application.Features.Products.Queries.GetPagedProducts;
 using Application.Features.Products.Queries.GetProductById;
 using Application.Features.Products.Queries.GetProductCount;
@@ -188,5 +190,17 @@ public class ProductsController(IMediator mediator) : ControllerBase
         CancellationToken cancellationToken)
     {
         return Ok(await mediator.Send(new GetTotalProductQuantityQuery(productId), cancellationToken));
+    }
+    
+    [HttpGet("expiring-soon")]
+    public async Task<IActionResult> GetExpiringSoon(CancellationToken cancellationToken)
+    {
+        return Ok(await mediator.Send(new ExpiringSoonProductsQuery(), cancellationToken));
+    }
+    
+    [HttpGet("out-of-stock")]
+    public async Task<IActionResult> GetOutOfStock(CancellationToken cancellationToken)
+    {
+        return Ok(await mediator.Send(new GetOutOfStockProductsQuery(), cancellationToken));
     }
 }

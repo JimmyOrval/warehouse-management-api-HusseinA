@@ -1,0 +1,5 @@
+﻿Chose SlowRequestLoggingMiddleware since it doesn't have any tests yet
+ 
+"generate unit tests for this middleware covering positive tests, negative tests (infrastructure failures,
+missing db entities, and parameter format rejcetions), and edge cases
+(integer overflow, maximum string length, timezone stuff)"

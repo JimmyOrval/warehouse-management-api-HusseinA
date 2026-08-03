@@ -1,0 +1,5 @@
+﻿It actually stuck to the prompt properly.
+It kept the scope small and created what's necessary.
+It analyzed my own architecture and generated something very similar.
+It even told me to add to DBContext and migrate the new entities.
+The entities work as expected in Swagger.
