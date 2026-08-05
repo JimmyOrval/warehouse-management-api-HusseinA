@@ -2,7 +2,7 @@
 
 namespace Presentation.Providers;
 
-public class CorrelationIdProvider(HttpContextAccessor httpContextAccessor) : ICorrelationIdProvider
+public class CorrelationIdProvider(IHttpContextAccessor httpContextAccessor) : ICorrelationIdProvider
 {
     public string CorrelationId()
     {

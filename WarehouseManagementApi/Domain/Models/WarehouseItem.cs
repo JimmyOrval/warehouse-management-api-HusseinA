@@ -27,9 +27,6 @@ public class WarehouseItem
     
     public void StockIn(int quantity)
     {
-        if(quantity <= 0)
-            throw new BusinessRuleException("Quantity cannot be less than 1");
-        
         QuantityInStock += quantity;
         LastStockUpdate = DateTime.UtcNow;
         
@@ -45,9 +42,6 @@ public class WarehouseItem
 
     public void StockOut(int quantity)
     {
-        if(quantity <= 0)
-            throw new BusinessRuleException("Quantity cannot be negative");
-        
         if(quantity > QuantityInStock)
             throw new BusinessRuleException("Quantity insufficient");
         

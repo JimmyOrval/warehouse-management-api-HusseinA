@@ -38,10 +38,10 @@ public class NotificationServiceClient(
                 return null;
             }
 
-            var result = await response.Content
-                .ReadFromJsonAsync<UnreadCountResponse>(
+            var count = await response.Content
+                .ReadFromJsonAsync<int>(
                     cancellationToken);
-            return result?.Count;
+            return count;
         }
         catch (TaskCanceledException)
         {
@@ -54,6 +54,4 @@ public class NotificationServiceClient(
             return null;
         }
     }
-
-    private record UnreadCountResponse(int Count);
 }
