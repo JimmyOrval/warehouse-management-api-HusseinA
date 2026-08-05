@@ -46,6 +46,17 @@ public class AssignSupplierToProductCommandHandler(
         product.AssignSupplier(supplier);
         await productRepository.SaveChangesAsync(cancellationToken);
         
+        // AI suggested for exercise 2 of Lab 10:
+        await cache.RemoveAsync(ProductCacheKeys.ById(product.Id), cancellationToken);
+        cacheStats.RecordRemoval(ProductCacheKeys.ById(product.Id));
+ 
+        foreach (var key in ProductCacheKeys.ListVariations)
+        {
+            await cache.RemoveAsync(key, cancellationToken);
+            cacheStats.RecordRemoval(key);
+        }
+        //
+        
         await cache.RemoveAsync(SupplierCacheKeys.ById(supplier.Id), cancellationToken);
         cacheStats.RecordRemoval(SupplierCacheKeys.ById(supplier.Id));
         await cache.RemoveAsync(SupplierCacheKeys.SuppliersList, cancellationToken);

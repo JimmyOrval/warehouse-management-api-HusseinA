@@ -12,6 +12,8 @@ public class WarehouseDbContext(DbContextOptions<WarehouseDbContext> options)
     public DbSet<WarehouseItem> WarehouseItems => Set<WarehouseItem>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
     public DbSet<SupplierDocument> SupplierDocuments => Set<SupplierDocument>();
+    public DbSet<Shipment> Shipments => Set<Shipment>();
+    public DbSet<ShipmentItem> ShipmentItems => Set<ShipmentItem>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -45,5 +47,15 @@ public class WarehouseDbContext(DbContextOptions<WarehouseDbContext> options)
             .HasOne(i => i.Supplier)
             .WithMany()
             .HasForeignKey(i => i.SupplierId);
+        
+        builder.Entity<Shipment>()
+            .HasOne(s => s.Supplier)
+            .WithMany()
+            .HasForeignKey(s => s.SupplierId);
+        
+        builder.Entity<ShipmentItem>()
+            .HasOne(i => i.Product)
+            .WithMany()
+            .HasForeignKey(i => i.ProductId);
     }
 }

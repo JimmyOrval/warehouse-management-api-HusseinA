@@ -1,0 +1,8 @@
+﻿used claude, gave it files it asked for
+ 
+"I want to add a GET /api/products/expiring-soon endpoint to my existing project. 
+It should return active products expiring in the next 30 days.
+The application-level service logic queries should filter by expiration timestamps.
+I want it to follow the same architecture as my project.
+Include the necessary fully validated request parameter shapes and ViewModels.
+Add unit tests and mock boundaries."

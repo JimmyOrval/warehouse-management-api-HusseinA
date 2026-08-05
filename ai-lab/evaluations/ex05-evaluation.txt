@@ -1,0 +1,28 @@
+﻿I don't have a ProductService.cs since we're using CQRS.
+So I picked ProductRepository.cs instead.
+
+First, the AI didn't find N+1 issues.
+
+The issues it found:
+
+What the AI said:
+"GetTotalStockQuantity was the only sync method in the whole class
+- not async, uses .Sum() instead of .SumAsync(),
+blocks a thread on DB I/O while everything else awaits properly.
+changed to GetTotalStockQuantityAsync.
+this is a BREAKING signature change,
+and needs updating to await it now."
+
+Then AI suggested adding .AsNoTracking() on all read methods for better performance,
+except for get by ID, which would have broken things.
+
+It gave a comment about GetExpiredSinceAsync's,
+saying its name is backwards from what it does.
+
+It said this about SearchAsync:
+"It used a correlated subquery for the supplier filter while
+GetProductsBySupplierAsync did the same kind of filter with a
+direct nav property check. made SearchAsync consistent with the
+other one, no behavior change since Supplier is already Include()'d either way"
+
+All tests still passed successfully

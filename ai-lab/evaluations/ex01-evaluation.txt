@@ -1,0 +1,11 @@
+﻿Code: Quality Does it follow C# naming conventions and clean
+programming principles?
+Yes
+
+Architecture: Does it strictly match the existing design patterns of your
+codebase?
+Yes
+
+Testability: Is the generated code easily mockable without hacking
+dependencies?
+Yes

@@ -11,6 +11,7 @@ A Warehouse Management API For Managing Warehouse Products Using An In-memory Li
 - [Session 7](#session-7)
 - [Session 8](#session-8)
 - [Session 9](#session-9)
+- [Session 10](#session-10)
 
 # Session 2
 ## Features
@@ -491,3 +492,20 @@ Added `WarehouseTestsAction.yml`: restores, builds, and runs the full test suite
 1. Code coverage: Application coverage over 80%.
 2. GitHub Actions: create the testing action.
 3. Negative request tests: duplicate SKU, invalid file type and size, zero and over-stock quantity adjustments, and missing/inactive suppliers and products.
+
+
+# Session 10
+
+## AI-Assisted Engineering
+
+Added `ai-lab/` (prompts, generated code, evaluations, notes) and `docs/ai-generated-api-docs.md`.
+
+Worked through all 10 exercises plus bonuses 1-3 using Claude and Rider's built-in AI as AI assistants for feature
+generation, debugging, test generation, integration testing, refactoring, documentation, a
+small module (Shipment Tracking). Bonus 4 skipped.
+
+## New Endpoints
+
+- `GET /api/products/expiring-soon`: active products expiring within 30 days
+- `GET /api/products/out-of-stock`: active products with zero total stock
+- `GET /api/shipments/{id}`, `POST /api/shipments`, `POST /api/shipments/{id}/products`, and `PUT /api/shipments/{id}/status`: shipment tracking module endpoints

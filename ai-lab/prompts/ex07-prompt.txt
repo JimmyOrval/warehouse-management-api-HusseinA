@@ -1,0 +1,4 @@
+﻿"Next to my API, create a small shipment tracking module.
+Create shipment, assign products to it, check status,
+update delivery status, and keep it minimal.
+Follow my existing architecture, same folder structure as products/suppliers"

@@ -1,0 +1,7 @@
+﻿The lab's described bug doesn't actually exist in my code, so the AI caught that.
+
+It caught a real bug instead: assigning a supplier to a product doesn't invalidate that product's cache entries.
+Only supplier cache keys get cleared.
+
+It gave me this fix:
+"add ProductCacheKeys.ById(product.Id) + list cache invalidation, same pattern CreateProduct already uses."

@@ -1,0 +1,7 @@
+﻿It was using DateTime.Now instead of UtcNow first try.
+
+It only checked ExpiryDate <= cutoff, so already-expired products will show as "expiring soon".
+
+It didn't generate a validator since there's no input.
+
+The tests it generated passed.

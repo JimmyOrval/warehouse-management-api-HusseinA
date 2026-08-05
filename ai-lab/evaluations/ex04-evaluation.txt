@@ -1,0 +1,3 @@
+﻿It didn't generate anything for this exercise since I showed it what I already have,
+and it decided that my tests already cover the requirements. It said that writing
+new tests would duplicate things for no reason

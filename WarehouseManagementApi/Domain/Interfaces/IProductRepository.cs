@@ -50,5 +50,11 @@ public interface IProductRepository
     Task<List<WarehouseItem>> GetProductWarehouseItemsAsync(
         string productId, CancellationToken cancellationToken);
      
-    int GetTotalStockQuantity(string productId);
+    Task<int> GetTotalStockQuantityAsync(string productId, CancellationToken cancellationToken);
+    
+    Task<List<Product>> GetExpiringSoonAsync(
+        DateTime from, DateTime to,
+        CancellationToken cancellationToken);
+    
+    Task<List<Product>> GetOutOfStockAsync(CancellationToken cancellationToken);
 }

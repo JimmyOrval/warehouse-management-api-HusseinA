@@ -1,0 +1,141 @@
+﻿// ---------- ExpiringSoonProductsQuery.cs ----------
+using Application.ViewModels;
+using MediatR;
+
+namespace DefaultNamespace;
+
+public record ExpiringSoonProductsQuery() : IRequest<IEnumerable<ProductViewModel>>;
+
+
+// ---------- ExpiringSoonProductsQueryHandler.cs ----------
+using Application.ViewModels;
+using AutoMapper;
+using Domain.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
+
+namespace Application.Features.Products.Queries.GetExpiringSoonProducts;
+
+public class ExpiringSoonProductsQueryHandler(
+    IProductRepository productRepository,
+    IMapper mapper,
+    ILogger<ExpiringSoonProductsQueryHandler> logger)
+    : IRequestHandler<ExpiringSoonProductsQuery, IEnumerable<ProductViewModel>>
+{
+    public async Task<IEnumerable<ProductViewModel>> Handle(
+        ExpiringSoonProductsQuery request, CancellationToken cancellationToken)
+    {
+        // NOTE: uses DateTime.Now here - flagged and fixed, see eval doc.
+        var cutoff = DateTime.Now.AddDays(30);
+
+        var products = await productRepository.GetExpiringSoonAsync(cutoff, cancellationToken);
+
+        logger.LogInformation("Retrieved {Count} products expiring within 30 days", products.Count);
+
+        return mapper.Map<IEnumerable<ProductViewModel>>(products);
+    }
+}
+
+
+// ---------- ProductRepository.cs addition ----------
+public async Task<List<Product>> GetExpiringSoonAsync(DateTime cutoffDate, CancellationToken cancellationToken)
+{
+    return await context.Products
+        .Where(p => p.Status != ProductStatus.Archived && p.ExpiryDate <= cutoffDate)
+        .ToListAsync(cancellationToken);
+}
+
+
+// ---------- ProductsController.cs addition ----------
+[HttpGet("expiring-soon")]
+public async Task<IActionResult> GetExpiringSoon(CancellationToken cancellationToken)
+{
+    return Ok(await mediator.Send(new ExpiringSoonProductsQuery(), cancellationToken));
+}
+
+// ---------- ExpiringSoonProductsTests.cs addition ----------
+public class ExpiringSoonProductsTests
+{
+    [Fact]
+    public async Task Handle_Calls_Repository_With_Utc_Now_And_30_Day_Cutoff()
+    {
+        var repository = RepositoryMockHelper.MockRepository<IProductRepository>();
+        repository
+            .Setup(r => r.GetExpiringSoonAsync(
+                It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+ 
+        var mapper = CommonMocksHelper.MockMapper(cfg =>
+        {
+            cfg.CreateMap<Product, Application.ViewModels.ProductViewModel>();
+        });
+ 
+        var handler = new ExpiringSoonProductsQueryHandler(
+            repository.Object,
+            mapper,
+            CommonMocksHelper.MockLogger<ExpiringSoonProductsQueryHandler>());
+ 
+        var before = DateTime.UtcNow;
+        await handler.Handle(new ExpiringSoonProductsQuery(), CancellationToken.None);
+        var after = DateTime.UtcNow;
+ 
+        repository.Verify(r => r.GetExpiringSoonAsync(
+            It.Is<DateTime>(from => from >= before && from <= after),
+            It.Is<DateTime>(to => to >= before.AddDays(30) && to <= after.AddDays(30)),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+ 
+    [Fact]
+    public async Task Handle_Returns_Empty_When_Repository_Returns_Empty()
+    {
+        var repository = RepositoryMockHelper.MockRepository<IProductRepository>();
+        repository
+            .Setup(r => r.GetExpiringSoonAsync(
+                It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+ 
+        var mapper = CommonMocksHelper.MockMapper(cfg =>
+        {
+            cfg.CreateMap<Product, Application.ViewModels.ProductViewModel>();
+        });
+ 
+        var handler = new ExpiringSoonProductsQueryHandler(
+            repository.Object,
+            mapper,
+            CommonMocksHelper.MockLogger<ExpiringSoonProductsQueryHandler>());
+ 
+        var result = await handler.Handle(new ExpiringSoonProductsQuery(), CancellationToken.None);
+ 
+        Assert.Empty(result);
+    }
+ 
+    [Fact]
+    public async Task Handle_Maps_Repository_Results_To_ViewModels()
+    {
+        var product = new ProductBuilder()
+            .WithSku("EXPIRING-SOON-SKU")
+            .Build();
+ 
+        var repository = RepositoryMockHelper.MockRepository<IProductRepository>();
+        repository
+            .Setup(r => r.GetExpiringSoonAsync(
+                It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([product]);
+ 
+        var mapper = CommonMocksHelper.MockMapper(cfg =>
+        {
+            cfg.CreateMap<Product, Application.ViewModels.ProductViewModel>();
+        });
+ 
+        var handler = new ExpiringSoonProductsQueryHandler(
+            repository.Object,
+            mapper,
+            CommonMocksHelper.MockLogger<ExpiringSoonProductsQueryHandler>());
+ 
+        var result = (await handler.Handle(new ExpiringSoonProductsQuery(), CancellationToken.None)).ToList();
+ 
+        Assert.Single(result);
+        Assert.Equal(product.Sku, result[0].Sku);
+    }
+}

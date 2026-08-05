@@ -1,0 +1,3 @@
+﻿The AI thought of extra edge cases specific for my middleware.
+It ignored some of the requirements since they don't fit for this specific test.
+It provided a test structure slightly different from my own.
