@@ -5,25 +5,17 @@
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class ReplacedProductIsArchivedWithStatus : Migration
+    public partial class NewDockerizationMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "IsArchived",
-                table: "Products",
-                newName: "Status");
         }
 
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "Status",
-                table: "Products",
-                newName: "IsArchived");
         }
     }
 }

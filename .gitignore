@@ -12,6 +12,7 @@ CHECKLIST.md
 .vscode/
 uploads/
 Logs/
+.docker-nuget-cache/
 
 
 # User-specific files (MonoDevelop/Xamarin Studio)

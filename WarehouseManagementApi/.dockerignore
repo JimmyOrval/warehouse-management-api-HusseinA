@@ -1,0 +1,21 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.idea/
+**/*.user
+.git/
+.github/
+
+# test/doc/lab folders - not needed at runtime
+IntegrationTests/
+UnitTests/
+ai-lab/
+docs/
+
+# never let real secrets end up baked into an image layer
+**/appsettings.Development.json
+**/appsettings.Testing.json
+**/*firebase-service-account*.json
+.env
+
+*.md

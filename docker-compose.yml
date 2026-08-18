@@ -1,29 +1,93 @@
 services:
+  api:
+    build:
+      context: ./WarehouseManagementApi
+      dockerfile: Dockerfile
+    container_name: warehouse-api
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__Redis: "redis:6379"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__Exchange: "warehouse.events"
+      RabbitMQ__Username: "${RABBITMQ_USER}"
+      RabbitMQ__Password: "${RABBITMQ_PASSWORD}"
+      RabbitMQ__Port: 5672
+      MinIO__Endpoint: "minio:9000"
+      MinIO__AccessKey: "${MINIO_USER}"
+      MinIO__SecretKey: "${MINIO_PASSWORD}"
+      MinIO__BucketName: "warehouse-assets"
+      MinIO__UseSsl: "false"
+      Firebase__ProjectId: "${FIREBASE_PROJECT_ID}"
+      Firebase__WebApiKey: "${FIREBASE_API_KEY}"
+      FirebaseServiceAccountPath: "/app/secrets/firebase-service-account.json"
+    volumes:
+      - "${FIREBASE_CREDENTIALS_HOST_PATH}:/app/secrets/firebase-service-account.json:ro"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - minio
+    networks:
+      - db-network
+      - cache-network
+      - messaging-network
+      - storage-network
+
+  postgres:
+    image: postgres:18
+    container_name: warehouse-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    networks:
+      - db-network
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: warehouse-redis
+    networks:
+      - cache-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: warehouse-rabbitmq
+    ports:
+      - "15672:15672" # only for UI
+    environment:
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - messaging-network
+
   minio:
     image: minio/minio:latest
     container_name: warehouse-minio
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9001:9001" # only for UI
     environment:
-      MINIO_ROOT_USER: username
-      MINIO_ROOT_PASSWORD: password
+      MINIO_USER: ${MINIO_USER}
+      MINIO_PASSWORD: ${MINIO_PASSWORD}
     volumes:
       - minio-data:/data
     command: server /data --console-address ":9001"
+    networks:
+      - storage-network
 
-  rabbitmq: 
-    image: rabbitmq:3-management 
-    container_name: warehouse-rabbitmq 
-    ports:
-      - "5672:5672"
-      - "15672:15672" 
-    environment: 
-      RABBITMQ_DEFAULT_USER: username 
-      RABBITMQ_DEFAULT_PASS: password 
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq 
+networks:
+  db-network:
+  cache-network:
+  messaging-network:
+  storage-network:
 
 volumes:
+  postgres-data:
   minio-data:
-  rabbitmq_data:
+  rabbitmq-data:
