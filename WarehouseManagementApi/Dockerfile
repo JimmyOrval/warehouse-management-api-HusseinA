@@ -6,7 +6,7 @@ COPY ["Application/Application.csproj", "Application/"]
 COPY ["Infrastructure/Infrastructure.csproj", "Infrastructure/"]
 COPY ["Domain/Domain.csproj", "Domain/"]
 
-COPY .docker-nuget-cache /root/.nuget/packages
+# COPY .docker-nuget-cache /root/.nuget/packages
 
 RUN dotnet restore Presentation/Presentation.csproj
 
