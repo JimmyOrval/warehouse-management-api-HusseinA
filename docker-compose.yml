@@ -8,13 +8,13 @@ services:
       - "8080:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:8080"
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       ConnectionStrings__Redis: "redis:6379"
       RabbitMQ__Host: "rabbitmq"
       RabbitMQ__Exchange: "warehouse.events"
       RabbitMQ__Username: "${RABBITMQ_USER}"
       RabbitMQ__Password: "${RABBITMQ_PASSWORD}"
-      RabbitMQ__Port: 5672
       MinIO__Endpoint: "minio:9000"
       MinIO__AccessKey: "${MINIO_USER}"
       MinIO__SecretKey: "${MINIO_PASSWORD}"
@@ -23,6 +23,8 @@ services:
       Firebase__ProjectId: "${FIREBASE_PROJECT_ID}"
       Firebase__WebApiKey: "${FIREBASE_API_KEY}"
       FirebaseServiceAccountPath: "/app/secrets/firebase-service-account.json"
+      HealthChecksUI__HealthChecks__0__Name: "Warehouse API"
+      HealthChecksUI__HealthChecks__0__Uri: "http://localhost:8080/health"
     volumes:
       - "${FIREBASE_CREDENTIALS_HOST_PATH}:/app/secrets/firebase-service-account.json:ro"
     depends_on:
@@ -35,6 +37,12 @@ services:
       - cache-network
       - messaging-network
       - storage-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   postgres:
     image: postgres:18

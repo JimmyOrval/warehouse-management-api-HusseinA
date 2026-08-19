@@ -10,11 +10,7 @@ COPY .docker-nuget-cache /root/.nuget/packages
 
 RUN dotnet restore Presentation/Presentation.csproj
 
-COPY Presentation/ Presentation/
-COPY Application/ Application/
-COPY Infrastructure/ Infrastructure/
-COPY Domain/ Domain/
-
+COPY . .
 
 WORKDIR /WarehouseManagementApi/Presentation
 RUN dotnet publish -c Release -o /app/publish --no-restore

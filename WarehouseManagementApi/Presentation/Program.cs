@@ -136,7 +136,7 @@ if(!builder.Environment.IsEnvironment("Testing"))
     {
         setup.AddHealthCheckEndpoint(
             "Warehouse API",
-            "/health");
+            "http://localhost:8080/health");
 
         setup.SetEvaluationTimeInSeconds(15);
         setup.MaximumHistoryEntriesPerEndpoint(50);
